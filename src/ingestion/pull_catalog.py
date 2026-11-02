@@ -3,7 +3,8 @@
 1. national + all provinces: tables from the search endpoint (100 rows/page, more tables than the list
    endpoints); publications and press releases from the list endpoint per year (search returns
    "list-not-available" for them, or for publications outside 0000)
-2. SIMDASI (Dalam Angka) table lists for all provinces and kab/kota
+2. kab/kota names per province (region lookup), and SIMDASI (Dalam Angka) table lists for every province
+   and for the kab/kota of SIMDASI_KAB_PROVINCES (all 514 kab/kota would be ~550 requests)
 3. var lists with notes for NOTES_DOMAINS (list endpoints are fixed at 10 rows/page)
 
 Resumable: a page already on disk is never fetched again. Stops at the first 401/403, after
@@ -31,6 +32,7 @@ LOG = RAW / "requests.log"
 
 YEARS = [2025, 2026]  # publications and press releases
 NOTES_DOMAINS = ["0000", "3200"]
+SIMDASI_KAB_PROVINCES = {"3200"}
 DELAY_S = 3.0  # BPS returns 429 after ~20 requests/minute
 RATE_LIMIT_WAIT_S = 65
 RETRIES = 3
@@ -111,7 +113,8 @@ def main(minutes):
 
         for prov in provinces:
             kabs = get(client, "/api/domain/type/kabbyprov/key/{key}", {"prov": prov}, RAW / "domains_kab" / f"{prov}.json")
-            for domain in [prov] + [d["domain_id"] for d in kabs["data"][1]]:
+            kab_ids = [d["domain_id"] for d in kabs["data"][1]] if prov in SIMDASI_KAB_PROVINCES else []
+            for domain in [prov] + kab_ids:
                 if time.monotonic() > deadline:
                     raise Stop("wall-clock limit reached, rerun to resume")
                 get(
@@ -120,7 +123,7 @@ def main(minutes):
                     {},
                     RAW / "simdasi" / f"{domain}.json",
                 )
-            print(f"simdasi {prov}: {len(kabs['data'][1]) + 1} table lists", flush=True)
+            print(f"simdasi {prov}: {len(kab_ids) + 1} table lists", flush=True)
 
         for domain in NOTES_DOMAINS:
             path = f"/api/list/model/var/domain/{domain}/key/{{key}}"
