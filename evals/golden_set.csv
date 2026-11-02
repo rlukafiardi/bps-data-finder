@@ -1,3 +1,31 @@
-question,expected_type,expected_id,domain,year,notes
-"Tingkat pengangguran terbuka Kota Bekasi 2023",var,,3275,2023,"example: fill expected_id from the BPS link"
-"Luas wilayah per kabupaten di Jawa Barat",simdasi,,3200,2024,"example: Dalam Angka table 1.1.1"
+question,targets,source,notes
+TPT per provinsi 2025,var:0000:543|var:0000:2562|simdasi:0000:WjNUbVprTDh4SjN4RXhLaUptMHZqQT09,claude,pooled judging added 1
+persentase penduduk miskin tiap provinsi,var:0000:192|simdasi:0000:REdXbUdSVjIzUlJTT0Z5Vy9Rd3ZmQT09,claude,pooled judging added 1
+IPM semua provinsi,var:0000:494|var:0000:2207|var:0000:202,claude,
+inflasi bulanan indonesia mtm,var:0000:1|statictable:0000:908|statictable:0000:907|statictable:0000:913,claude,pooled judging added 2
+proyeksi penduduk per provinsi sampai 2035,statictable:0000:1274,claude,
+rata rata gaji buruh per provinsi,var:0000:1521|var:0000:2563|statictable:0000:2096|statictable:0000:2097|statictable:0000:2130|statictable:0000:2189|statictable:0000:2233|statictable:0000:2255,claude,pooled judging added 6
+gini ratio per provinsi,var:0000:98,claude,
+NTP per subsektor,var:0000:13|publication:0000:7577414ca4999b690ff6818d,claude,pooled judging added 1
+produksi padi tiap provinsi,var:0000:1498|var:0000:2506|simdasi:0000:d3ZjM280TU9FanlkdDRETUV5aVdndz09,claude,pooled judging added 1
+akses air minum layak rumah tangga per provinsi,var:0000:845|var:0000:854|simdasi:0000:ME4xN1lOa1hRV3BHcXhZVFRJR1RNZz09,claude,pooled judging added 1
+life expectancy by province,var:0000:501|var:0000:2273,claude,english
+jumlah kunjungan wisman per bulan,var:0000:1150|var:0000:1017|var:0000:74,claude,pooled judging added 1
+garis kemiskinan provinsi,var:0000:195|statictable:1200:1947,claude,pooled judging added 1
+berapa persen rumah tangga yang pakai listrik PLN,statictable:0000:1555|var:0000:87|var:0000:856|var:0000:2832,claude,pooled judging added 3
+pertumbuhan ekonomi indonesia triwulan II 2026,pressrelease:0000:169699,claude,
+BRS kemiskinan maret 2026,pressrelease:0000:167857,claude,
+buku statistik indonesia 2026,publication:0000:a43f03f45543dc4e9942f44c,claude,
+publikasi sakernas agustus 2025,publication:0000:42a75ee61332755586fdfcdd|publication:0000:cd78a8ff95fcf228a712e8ac|publication:0000:7cafd1df082c81784e0e15f8|publication:0000:5fe58c9723acafc73fb95bff,claude,pooled judging added 2
+unemployment rate aceh by regency,var:1100:206|var:0000:2824,claude,english
+angka kemiskinan aceh terbaru,pressrelease:1100:167860|var:1100:618,claude,pooled judging added 1
+persentase penduduk miskin kabupaten kota sumut,var:1200:73|statictable:1200:1382|var:0000:621|simdasi:1200:REdXbUdSVjIzUlJTT0Z5Vy9Rd3ZmQT09,claude,pooled judging added 1
+sumut dalam angka 2026,publication:1200:cc9ebe7b48da2db36146409c,claude,
+PDRB ADHB kabupaten kota sumatera barat,var:1300:785,claude,
+jumlah penduduk per kabupaten riau,var:1400:32|var:1400:458|simdasi:1400:WVRlTTcySlZDa3lUcFp6czNwbHl4QT09,claude,pooled judging added 1
+inflasi yoy provinsi jambi,var:1500:2143,claude,
+produksi padi sumatera selatan,var:1600:394|var:1600:783|simdasi:1600:d3ZjM280TU9FanlkdDRETUV5aVdndz09|publication:1600:39af5cc2c4f98288a60176c5,claude,pooled judging added 2
+jumlah SD dan murid kota bandung,simdasi:3273:4.1.3,claude,
+kepadatan penduduk per kecamatan kabupaten bogor,simdasi:3201:3.1.1,claude,
+IPM kabupaten kota di jawa barat,simdasi:3200:4.6.5|var:0000:7,claude,relabel after the 3200 search pull (province tables)
+luas kecamatan di kabupaten bandung,simdasi:3204:1.1.1,claude,
