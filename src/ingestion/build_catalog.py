@@ -71,7 +71,7 @@ def listed(model, id_field, text_fields):
 
 def simdasi_lists():
     domain_urls = {}
-    for path in [RAW / "domains_prov.json", *sorted((RAW / "domains_kab").glob("*.json"))]:
+    for path in [RAW / "domains_prov.json", RAW / "domains_kab.json"]:
         for d in json.loads(path.read_text())["data"][1]:
             domain_urls[d["domain_id"]] = d["domain_url"].rstrip("/")
     for path in sorted((RAW / "simdasi").glob("*.json")):

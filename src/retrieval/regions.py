@@ -45,8 +45,8 @@ def domains():
                 *([PROVINCE_ENGLISH[d["domain_id"]]] if d["domain_id"] in PROVINCE_ENGLISH else []),
             ],
         }
-    for path in sorted((RAW / "domains_kab").glob("*.json")):
-        for d in json.loads(path.read_text())["data"][1]:
+    if (RAW / "domains_kab.json").exists():
+        for d in json.loads((RAW / "domains_kab.json").read_text())["data"][1]:
             name = normalize(d["domain_name"])
             if int(d["domain_id"][2:]) >= 71:  # BPS codes: xx01-xx69 kabupaten, xx71+ kota
                 level, label, aliases = "kota", f"Kota {d['domain_name']}", [name, f"kota {name}", f"{name} city"]

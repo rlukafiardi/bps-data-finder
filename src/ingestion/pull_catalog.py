@@ -109,9 +109,12 @@ def main(minutes):
                     n = pull_pages(client, path, {"year": year}, RAW / domain / model / str(year), deadline)
                     print(f"{model} {domain} {year}: {n} pages", flush=True)
 
+        # one list of all kab/kota: `kabbyprov?prov=` started returning Aceh for every province (2026-11-02)
+        kabs = get(client, "/api/domain/type/kab/key/{key}", {}, RAW / "domains_kab.json")
+        kab_ids = [d["domain_id"] for d in kabs["data"][1]]
         for prov in provinces:
-            kabs = get(client, "/api/domain/type/kabbyprov/key/{key}", {"prov": prov}, RAW / "domains_kab" / f"{prov}.json")
-            for domain in [prov] + [d["domain_id"] for d in kabs["data"][1]]:
+            prov_kabs = [k for k in kab_ids if k[:2] == prov[:2]]
+            for domain in [prov] + prov_kabs:
                 if time.monotonic() > deadline:
                     raise Stop("wall-clock limit reached, rerun to resume")
                 get(
@@ -120,7 +123,7 @@ def main(minutes):
                     {},
                     RAW / "simdasi" / f"{domain}.json",
                 )
-            print(f"simdasi {prov}: {len(kabs['data'][1]) + 1} table lists", flush=True)
+            print(f"simdasi {prov}: {len(prov_kabs) + 1} table lists", flush=True)
 
         for domain in NOTES_DOMAINS:
             path = f"/api/list/model/var/domain/{domain}/key/{{key}}"
