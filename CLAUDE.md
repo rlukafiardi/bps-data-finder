@@ -19,8 +19,14 @@ top 5, better than the site search?
 - Out of scope until it passes: value fetching, UI / MCP server, all 514 kab/kota, scheduled refresh, deployment.
 
 ## Data
-- Sources: BPS WebAPI (webapi.bps.go.id). Models per wrapper `stadata` (bps-statistics on GitHub):
-  subject, var, statictable, publication, pressrelease, by domain code. Endpoints unverified.
+- Sources: BPS WebAPI (webapi.bps.go.id, spec at /documentation/openapi.yaml). Key in the path:
+  `/v1/api/list/model/{var|statictable|publication|pressrelease|subject|...}/domain/{domain}/key/{key}`,
+  `/v1/api/view/domain/{d}/model/{m}/lang/{lang}/id/{id}/key/{key}`, `/v1/api/domain/type/{type}` (region list),
+  `/v1/searching/content/domain/{d}/model/{m}` (BPS's own search: usable as the automatic baseline),
+  `interoperabilitas/datasource/simdasi/...` (SIMDASI regional tables, may cover "Dalam Angka" without PDF parsing).
+- Terms (excerpts read, full text unverified): key must stay private; non-commercial unless authorized;
+  rate limited, no numbers published, no multiple keys/IPs to get around it; apps must show
+  "This service uses the Badan Pusat Statistik (BPS) API." Key issued after BPS approves the application.
 - Grain / key tables: TBD
 - Known quirks: none yet
 
@@ -31,7 +37,8 @@ top 5, better than the site search?
 
 ## Status
 - Works: scaffold only.
-- Next: get API key, read terms and rate limits, one call per model for domain 0000 (print keys + fields).
+- Next: API key (waiting on BPS approval); then one call per model for domain 0000 (print keys + fields),
+  check search endpoint as baseline and whether SIMDASI replaces PDF table extraction.
 - Ideas: (1) finder-first [open] (2) unified catalog index [open] (3) publication table-list index [open]
   (4) hybrid BM25 + embeddings [open] (5) LLM query parsing + domain gazetteer [open] (6) fallback
   kab/kota -> province / Dalam Angka [open] (7) fetch values for dynamic tables [open, after POC]
