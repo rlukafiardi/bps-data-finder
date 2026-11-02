@@ -39,7 +39,11 @@ in the top 5, better than the site search?
   Kota Bandung and Kab Bogor 47 each. Whether that covers the full printed book is unverified.
 - Known quirks: envelope is `data: [paging, rows]`; SIMDASI nests a second envelope in `data[1]` with rows
   in `data[1].data`. List endpoints return 10 rows per page, fixed (perpage/per_page/limit ignored).
-  Kab/kota catalogs are large (Kota Bandung: var 2506, statictable 4701). Titles carry HTML (`<sup>`, `<i>`). `domain/type/prov` returns 34 provinces, not 38.
+  Kab/kota catalogs are large (Kota Bandung: var 2506, statictable 4701). Rate limit ~20 requests/min
+  (429 after 22 requests at 1/s; 3 s spacing is clean). Search: perpage works (100), category 1 = statictable,
+  2 = var, 3 = SIMDASI (url id = base64 of "<id>#<cat>", or of id_tabel for 3), more tables than the lists;
+  but pagination is unstable: items repeat across pages and others never show (0-13% missing per domain).
+  Search returns nothing for press releases, and for publications outside 0000: use list + `year`. Titles carry HTML (`<sup>`, `<i>`). `domain/type/prov` returns 34 provinces, not 38.
   `load_dotenv()` fails from stdin scripts: pass `.env` explicitly.
 
 ## Decisions

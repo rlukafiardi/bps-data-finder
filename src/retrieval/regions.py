@@ -1,0 +1,64 @@
+"""BPS domain codes with their names and aliases, and lookup of region mentions in a question."""
+
+import json
+import re
+from functools import cache
+from pathlib import Path
+
+RAW = Path("data/raw/catalog")
+
+PROVINCE_ALIASES = {
+    "1100": ["nad"], "1200": ["sumut"], "1300": ["sumbar"], "1600": ["sumsel"],
+    "1900": ["babel", "bangka belitung", "kepulauan bangka belitung"], "2100": ["kepri", "kepulauan riau"],
+    "3100": ["dki", "jakarta"], "3200": ["jabar"], "3300": ["jateng"], "3400": ["diy", "jogja", "yogyakarta"],
+    "3500": ["jatim"], "5200": ["ntb"], "5300": ["ntt"], "6100": ["kalbar"], "6200": ["kalteng"],
+    "6300": ["kalsel"], "6400": ["kaltim"], "6500": ["kaltara"], "7100": ["sulut"], "7200": ["sulteng"],
+    "7300": ["sulsel"], "7400": ["sultra"], "7600": ["sulbar"], "8200": ["malut"], "9100": ["papua barat"],
+}
+NATIONAL_WORDS = ["indonesia", "nasional"]
+
+
+def normalize(text):
+    return " ".join(re.sub(r"[^a-z0-9 ]", " ", text.lower()).split())
+
+
+@cache
+def domains():
+    """{domain_id: {"name": str, "level": "national" | "prov" | "kab" | "kota", "aliases": [str]}}"""
+    out = {"0000": {"name": "Indonesia", "level": "national", "aliases": NATIONAL_WORDS}}
+    for d in json.loads((RAW / "domains_prov.json").read_text())["data"][1]:
+        name = normalize(d["domain_name"])
+        out[d["domain_id"]] = {
+            "name": d["domain_name"], "level": "prov",
+            "aliases": [name, f"provinsi {name}", *PROVINCE_ALIASES.get(d["domain_id"], [])],
+        }
+    for path in sorted((RAW / "domains_kab").glob("*.json")):
+        for d in json.loads(path.read_text())["data"][1]:
+            name = normalize(d["domain_name"])
+            if int(d["domain_id"][2:]) >= 71:  # BPS codes: xx01-xx69 kabupaten, xx71+ kota
+                level, label, aliases = "kota", f"Kota {d['domain_name']}", [name, f"kota {name}"]
+            else:
+                level, label, aliases = "kab", f"Kabupaten {d['domain_name']}", [name, f"kabupaten {name}", f"kab {name}"]
+            out[d["domain_id"]] = {"name": label, "level": level, "aliases": aliases}
+    return out
+
+
+def find_regions(question):
+    """Domain ids whose alias appears in the question, longest alias first, overlaps removed.
+
+    A bare name shared by a kabupaten and a kota ("bandung") returns both.
+    """
+    q = f" {normalize(question)} "
+    matches = sorted(
+        ((alias, dom) for dom, d in domains().items() for alias in d["aliases"] if f" {alias} " in q),
+        key=lambda m: -len(m[0]),
+    )
+    taken, found = [], []  # (start, end, alias)
+    for alias, dom in matches:
+        start = q.index(f" {alias} ")
+        end = start + len(alias) + 2
+        if any(start < e and s < end and alias != a for s, e, a in taken):
+            continue  # inside a longer match, e.g. "bandung" within "kota bandung"
+        taken.append((start, end, alias))
+        found.append(dom)
+    return list(dict.fromkeys(found))
