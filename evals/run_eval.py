@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.retrieval.bm25 import BM25
+from src.retrieval.dense import Dense, Hybrid
 from src.retrieval.region_rank import RegionRank
 
 GOLDEN = Path("evals/golden_set.csv")
@@ -63,8 +64,15 @@ def main():
     catalog = pd.read_parquet(CATALOG)
     print(f"golden rows: {len(golden)} ({golden['source'].value_counts().to_dict()}), catalog rows: {len(catalog)}")
     check_targets(golden, catalog)
-    bm25 = BM25(catalog)
-    methods = {"bm25": bm25, "bm25+region": RegionRank(bm25)}
+    bm25, dense = BM25(catalog), Dense(catalog)
+    hybrid = Hybrid(bm25, dense)
+    methods = {
+        "bm25": bm25,
+        "bm25+region": RegionRank(bm25),
+        "dense": dense,
+        "dense+region": RegionRank(dense),
+        "hybrid+region": RegionRank(hybrid),
+    }
     for name, method in methods.items():
         df = score(method, golden)
         print(f"\n== {name}")

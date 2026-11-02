@@ -57,8 +57,18 @@ in the top 5, better than the site search?
 - 2026-11-02: SIMDASI table lists replace PDF table-list extraction (no pdfplumber in the POC). PDF
   extraction comes back only if golden questions miss tables that are in the book but not in SIMDASI.
 
+- 2026-11-02: Golden set v0: 30 questions drafted by Claude (`source=claude`), labelled with keyword filters,
+  then pooled judging of all methods' top 5 under one rule (asked statistic at asked breakdown). Pass / stop
+  is judged on Radikal's real questions (`source=radikal`), not on these.
+- 2026-11-02: SIMDASI kab/kota lists (47 tables) are a subset of the printed Dalam Angka: rainfall (Kota Bekasi),
+  hospitals (Depok), rice production (Kab Karawang) have no table there. PDF route may come back for kab/kota.
+
 ## Status
-- Works: API key; one call per endpoint OK, no rate limiting at 1.5 s spacing.
+- Works: catalog builder, region lookup (`src/retrieval/regions.py`), BM25, dense (multilingual-e5-small),
+  RRF hybrid, region-aware ranking, eval (`uv run python -m evals.run_eval`).
+- Results on drafted set, partial catalog (national + 1100-1600 + Jabar SIMDASI), R@5 / MRR:
+  bm25 0.57/0.43, bm25+region 0.80/0.72, dense 0.63/0.40, dense+region 0.83/0.59, hybrid+region 0.83/0.75.
+  Region ranking is the big gain. Misses: English questions, acronyms (IPM), short exact titles.
 - Next: catalog pull (`uv run python -m src.ingestion.pull_catalog`, resumable) -> build parquet;
   Radikal fills `evals/golden_set.csv` (~50 questions, see `evals/README.md`).
 - Ideas: (1) finder-first [done: decided] (2) unified catalog index [open] (3) Dalam Angka table index via
