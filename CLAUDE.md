@@ -29,7 +29,7 @@ in the top 5, better than the site search?
 - Terms (excerpts read, full text unverified): key must stay private; non-commercial unless authorized;
   rate limited, no numbers published, no multiple keys/IPs to get around it; apps must show
   "This service uses the Badan Pusat Statistik (BPS) API." Key issued after BPS approves the application.
-- Grain / key tables (probed 2026-11-02, `src/ingestion/probe_api.py`): one row per catalog item.
+- Grain / key tables (probed 2026-11-02 with a one-off script, removed; see git history): one row per catalog item.
   Domain 0000: var 1766, statictable 722, publication 5975, pressrelease 2421. Domain 3200: var 612, statictable 503.
   Jabar has 27 kab/kota domains (`domain/type/kabbyprov?prov=3200`).
 - Text per item: var has title + def + notes + unit + subject; statictable title + subject only (thin);
@@ -76,10 +76,12 @@ in the top 5, better than the site search?
   rewrite v2+hybrid+region 0.93/0.75 (`data/processed/eval_rewrite_v2.txt`). Misses left: kab/kota not yet
   in the region list (Sungai Penuh, Pematangsiantar), "per provinsi" tables only on the 0000 site under
   another title, period matching (BRS DKI Januari 2025 returns other months).
-- Next: catalog pull (`uv run python -m src.ingestion.pull_catalog`, resumable) -> build parquet;
-  Radikal fills `evals/golden_set.csv` (~50 questions, see `evals/README.md`).
-- Ideas: (1) finder-first [done: decided] (2) unified catalog index [open] (3) Dalam Angka table index via
-  SIMDASI [open; PDF route dropped]
-  (4) hybrid BM25 + embeddings [open] (5) LLM query parsing + domain gazetteer [open] (6) fallback
-  kab/kota -> province / Dalam Angka [open] (7) fetch values verbatim (var data, SIMDASI 25 [tested OK], statictable view) [open, after POC]
-  (8) MCP server or web page [open, after POC]
+- Next: when the pull finishes (`data/raw/pull.out`), rebuild the catalog, measure the BPS site-search
+  baseline (`/v1/searching/content`, same 70 questions), rerun the eval, then decide pass / stop (Opus).
+  Radikal adds 10-15 real questions (`source=radikal`) for the decision.
+- Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
+  [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
+  gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [partly:
+  region ranking weights] (7) fetch values verbatim (var data, SIMDASI 25 [tested OK], statictable view)
+  [open, after POC] (8) MCP server or web page [open, after POC] (9) period matching (month / quarter /
+  year in the question vs title) [open] (10) BPS glosarium endpoint as acronym list [open]
