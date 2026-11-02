@@ -27,8 +27,17 @@ top 5, better than the site search?
 - Terms (excerpts read, full text unverified): key must stay private; non-commercial unless authorized;
   rate limited, no numbers published, no multiple keys/IPs to get around it; apps must show
   "This service uses the Badan Pusat Statistik (BPS) API." Key issued after BPS approves the application.
-- Grain / key tables: TBD
-- Known quirks: none yet
+- Grain / key tables (probed 2026-11-02, `src/ingestion/probe_api.py`): one row per catalog item.
+  Domain 0000: var 1766, statictable 722, publication 5975, pressrelease 2421. Domain 3200: var 612, statictable 503.
+  Jabar has 27 kab/kota domains (`domain/type/kabbyprov?prov=3200`).
+- Text per item: var has title + def + notes + unit + subject; statictable title + subject only (thin);
+  publication and pressrelease have abstract + pdf link; search returns title + body + relevance.
+- SIMDASI (Yearbook Dataset = Dalam Angka): service 23 lists tables per 7-digit MFD area (`3200000`):
+  id_tabel, kode_tabel (e.g. 1.1.1), judul / judul_en, bab, ketersediaan_tahun. Jabar 153 tables,
+  Kota Bandung and Kab Bogor 47 each. Whether that covers the full printed book is unverified.
+- Known quirks: envelope is `data: [paging, rows]`; SIMDASI nests a second envelope in `data[1]` with rows
+  in `data[1].data`. Titles carry HTML (`<sup>`, `<i>`). `domain/type/prov` returns 34 provinces, not 38.
+  `load_dotenv()` fails from stdin scripts: pass `.env` explicitly.
 
 ## Decisions
 - 2026-11-02: Project created. Type: llm. Tools: uv, httpx, pandas, pyarrow, python-dotenv; in-memory numpy
@@ -36,9 +45,8 @@ top 5, better than the site search?
 - 2026-11-02: Finder, not answerer: results are source pointers so the LLM cannot invent statistics.
 
 ## Status
-- Works: scaffold only.
-- Next: API key (waiting on BPS approval); then one call per model for domain 0000 (print keys + fields),
-  check search endpoint as baseline and whether SIMDASI replaces PDF table extraction.
+- Works: API key; one call per endpoint OK, no rate limiting at 1.5 s spacing.
+- Next: decide SIMDASI vs PDF table lists; resumable catalog pull for the slice to parquet; golden set template.
 - Ideas: (1) finder-first [open] (2) unified catalog index [open] (3) publication table-list index [open]
   (4) hybrid BM25 + embeddings [open] (5) LLM query parsing + domain gazetteer [open] (6) fallback
   kab/kota -> province / Dalam Angka [open] (7) fetch values for dynamic tables [open, after POC]
