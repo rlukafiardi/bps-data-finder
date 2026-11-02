@@ -5,13 +5,16 @@ A target is `type:domain:id`; SIMDASI targets use the table code (e.g. `simdasi:
     uv run python -m evals.run_eval
 """
 
+import os
 from pathlib import Path
 
 import pandas as pd
+from dotenv import load_dotenv
 
 from src.retrieval.bm25 import BM25
 from src.retrieval.dense import Dense, Hybrid
 from src.retrieval.region_rank import RegionRank
+from src.retrieval.rewrite import Rewriter, Rewritten
 
 GOLDEN = Path("evals/golden_set.csv")
 CATALOG = Path("data/processed/catalog.parquet")
@@ -60,6 +63,7 @@ def check_targets(golden, catalog):
 
 
 def main():
+    load_dotenv(".env")
     golden = pd.read_csv(GOLDEN, dtype=str)
     catalog = pd.read_parquet(CATALOG)
     print(f"golden rows: {len(golden)} ({golden['source'].value_counts().to_dict()}), catalog rows: {len(catalog)}")
@@ -73,6 +77,10 @@ def main():
         "dense+region": RegionRank(dense),
         "hybrid+region": RegionRank(hybrid),
     }
+    if os.environ.get("GEMINI_API_KEY"):
+        rewriter = Rewriter()
+        methods["rewrite+bm25+region"] = Rewritten(RegionRank(bm25), rewriter)
+        methods["rewrite+hybrid+region"] = Rewritten(RegionRank(hybrid), rewriter)
     for name, method in methods.items():
         df = score(method, golden)
         print(f"\n== {name}")

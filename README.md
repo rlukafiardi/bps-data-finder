@@ -17,7 +17,14 @@ POC: does hybrid retrieval over the BPS WebAPI catalog beat bps.go.id's own sear
 
 ```bash
 uv sync
-cp .env.example .env   # add BPS_API_KEY
+cp .env.example .env   # add BPS_API_KEY; GEMINI_API_KEY (aistudio.google.com) for the LLM rewrite
 ```
 
-Entry points come with the first pipeline step.
+uv run python -m src.ingestion.pull_catalog    # resumable, ~20 requests/min
+uv run python -m src.ingestion.build_catalog   # -> data/processed/catalog.parquet
+uv run python -m evals.run_eval                # Recall@5 / MRR per method
+```
+
+This service uses the Badan Pusat Statistik (BPS) API.
+
+```
