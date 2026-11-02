@@ -1,0 +1,3 @@
+question,expected_type,expected_id,domain,year,notes
+"Tingkat pengangguran terbuka Kota Bekasi 2023",var,,3275,2023,"example: fill expected_id from the BPS link"
+"Luas wilayah per kabupaten di Jawa Barat",simdasi,,3200,2024,"example: Dalam Angka table 1.1.1"

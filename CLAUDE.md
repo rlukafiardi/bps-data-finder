@@ -8,8 +8,9 @@ Success measured by: Recall@5 and MRR on a golden question set, against bps.go.i
 
 POC: can retrieval over the BPS WebAPI catalog (+ SIMDASI Dalam Angka table lists) put the correct source
 in the top 5, better than the site search?
-- Slice: domain 0000 (national) + one province (e.g. 3200 Jawa Barat) and its kab/kota; vars, static tables,
-  press releases, publications from the last 2 years, SIMDASI table lists for 3200000 and its kab/kota.
+- Slice: domains 0000 (national) + 3200 (Jawa Barat): vars, static tables, publications and press releases
+  from 2025-2026; SIMDASI table lists for 3200 and all 27 kab/kota. No kab/kota catalogs: kab/kota questions
+  are answered by province tables "menurut kabupaten/kota" or SIMDASI.
   ~50 golden questions written by Radikal from real past searches.
 - Method: BM25 vs multilingual embeddings vs hybrid (in-memory numpy), no generation; then LLM query
   parsing (indicator / region / period, acronym expansion, place name -> domain code) as one variant.
@@ -37,7 +38,8 @@ in the top 5, better than the site search?
   id_tabel, kode_tabel (e.g. 1.1.1), judul / judul_en, bab, ketersediaan_tahun. Jabar 153 tables,
   Kota Bandung and Kab Bogor 47 each. Whether that covers the full printed book is unverified.
 - Known quirks: envelope is `data: [paging, rows]`; SIMDASI nests a second envelope in `data[1]` with rows
-  in `data[1].data`. Titles carry HTML (`<sup>`, `<i>`). `domain/type/prov` returns 34 provinces, not 38.
+  in `data[1].data`. List endpoints return 10 rows per page, fixed (perpage/per_page/limit ignored).
+  Kab/kota catalogs are large (Kota Bandung: var 2506, statictable 4701). Titles carry HTML (`<sup>`, `<i>`). `domain/type/prov` returns 34 provinces, not 38.
   `load_dotenv()` fails from stdin scripts: pass `.env` explicitly.
 
 ## Decisions
@@ -46,12 +48,15 @@ in the top 5, better than the site search?
 - 2026-11-02: The LLM picks the source, never the number. Values come verbatim from the API (var data,
   SIMDASI service 25, statictable view) with source, year and footnotes. PDF-only tables: pointer + page,
   any extracted preview labelled unverified. POC tests finding only; value fetching is phase 2.
+- 2026-11-02: Slice is national + province only: all 27 Jabar kab/kota catalogs would be ~19k requests
+  (~16 h at 3 s); this slice is ~480 requests. All 34 provinces: ~4,600 requests if needed later.
 - 2026-11-02: SIMDASI table lists replace PDF table-list extraction (no pdfplumber in the POC). PDF
   extraction comes back only if golden questions miss tables that are in the book but not in SIMDASI.
 
 ## Status
 - Works: API key; one call per endpoint OK, no rate limiting at 1.5 s spacing.
-- Next: decide SIMDASI vs PDF table lists; resumable catalog pull for the slice to parquet; golden set template.
+- Next: catalog pull (`uv run python -m src.ingestion.pull_catalog`, resumable) -> build parquet;
+  Radikal fills `evals/golden_set.csv` (~50 questions, see `evals/README.md`).
 - Ideas: (1) finder-first [done: decided] (2) unified catalog index [open] (3) Dalam Angka table index via
   SIMDASI [open; PDF route dropped]
   (4) hybrid BM25 + embeddings [open] (5) LLM query parsing + domain gazetteer [open] (6) fallback
