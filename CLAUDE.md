@@ -44,7 +44,8 @@ in the top 5, better than the site search?
   2 = var, 3 = SIMDASI (url id = base64 of "<id>#<cat>", or of id_tabel for 3), more tables than the lists;
   but pagination is unstable: items repeat across pages and others never show (0-13% missing per domain).
   Search returns nothing for press releases, and for publications outside 0000: use list + `year`. Titles carry HTML (`<sup>`, `<i>`). `domain/type/prov` returns 34 provinces, not 38.
-  `load_dotenv()` fails from stdin scripts: pass `.env` explicitly.
+  `load_dotenv()` fails from stdin scripts: pass `.env` explicitly. `domain/type/kabbyprov?prov=` returned
+  Aceh for every province from 2026-11-02 evening: use `domain/type/kab` (all 514) and group by code prefix.
 
 ## Decisions
 - 2026-11-02: Project created. Type: llm. Tools: uv, httpx, pandas, pyarrow, python-dotenv; in-memory numpy
@@ -76,9 +77,11 @@ in the top 5, better than the site search?
   rewrite v2+hybrid+region 0.93/0.75 (`data/processed/eval_rewrite_v2.txt`). Misses left: kab/kota not yet
   in the region list (Sungai Penuh, Pematangsiantar), "per provinsi" tables only on the 0000 site under
   another title, period matching (BRS DKI Januari 2025 returns other months).
-- Next: when the pull finishes (`data/raw/pull.out`), rebuild the catalog, measure the BPS site-search
-  baseline (`/v1/searching/content`, same 70 questions), rerun the eval, then decide pass / stop (Opus).
-  Radikal adds 10-15 real questions (`source=radikal`) for the decision.
+- Next (resume here, 2026-11-03): (1) check `data/raw/pull2.out` ends with `exit=0` (second run: full
+  kab/kota list + ~460 SIMDASI kab/kota lists; rerun `uv run python -m src.ingestion.pull_catalog` if not);
+  (2) completeness check: search vs list-endpoint var ids for 0000/3200, SIMDASI lists per province;
+  (3) rebuild catalog; (4) BPS site-search baseline on the 70 questions (`/v1/searching/content`, 3 s apart);
+  (5) full eval; (6) pass / stop with Opus. Radikal adds 10-15 real questions (`source=radikal`) first.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [partly:
