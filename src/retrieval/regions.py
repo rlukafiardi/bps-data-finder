@@ -15,6 +15,15 @@ PROVINCE_ALIASES = {
     "6300": ["kalsel"], "6400": ["kaltim"], "6500": ["kaltara"], "7100": ["sulut"], "7200": ["sulteng"],
     "7300": ["sulsel"], "7400": ["sultra"], "7600": ["sulbar"], "8200": ["malut"], "9100": ["papua barat"],
 }
+PROVINCE_ENGLISH = {
+    "1200": "north sumatra", "1300": "west sumatra", "1600": "south sumatra",
+    "1900": "bangka belitung islands", "2100": "riau islands", "3200": "west java", "3300": "central java",
+    "3400": "special region of yogyakarta", "3500": "east java", "5200": "west nusa tenggara",
+    "5300": "east nusa tenggara", "6100": "west kalimantan", "6200": "central kalimantan",
+    "6300": "south kalimantan", "6400": "east kalimantan", "6500": "north kalimantan", "7100": "north sulawesi",
+    "7200": "central sulawesi", "7300": "south sulawesi", "7400": "southeast sulawesi", "7600": "west sulawesi",
+    "8200": "north maluku", "9100": "west papua",
+}
 NATIONAL_WORDS = ["indonesia", "nasional"]
 
 
@@ -30,15 +39,20 @@ def domains():
         name = normalize(d["domain_name"])
         out[d["domain_id"]] = {
             "name": d["domain_name"], "level": "prov",
-            "aliases": [name, f"provinsi {name}", *PROVINCE_ALIASES.get(d["domain_id"], [])],
+            "aliases": [
+                name, f"provinsi {name}", f"{name} province",
+                *PROVINCE_ALIASES.get(d["domain_id"], []),
+                *([PROVINCE_ENGLISH[d["domain_id"]]] if d["domain_id"] in PROVINCE_ENGLISH else []),
+            ],
         }
     for path in sorted((RAW / "domains_kab").glob("*.json")):
         for d in json.loads(path.read_text())["data"][1]:
             name = normalize(d["domain_name"])
             if int(d["domain_id"][2:]) >= 71:  # BPS codes: xx01-xx69 kabupaten, xx71+ kota
-                level, label, aliases = "kota", f"Kota {d['domain_name']}", [name, f"kota {name}"]
+                level, label, aliases = "kota", f"Kota {d['domain_name']}", [name, f"kota {name}", f"{name} city"]
             else:
-                level, label, aliases = "kab", f"Kabupaten {d['domain_name']}", [name, f"kabupaten {name}", f"kab {name}"]
+                level, label = "kab", f"Kabupaten {d['domain_name']}"
+                aliases = [name, f"kabupaten {name}", f"kab {name}", f"{name} regency"]
             out[d["domain_id"]] = {"name": label, "level": level, "aliases": aliases}
     return out
 

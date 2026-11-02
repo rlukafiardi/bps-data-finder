@@ -57,7 +57,8 @@ in the top 5, better than the site search?
 - 2026-11-02: SIMDASI table lists replace PDF table-list extraction (no pdfplumber in the POC). PDF
   extraction comes back only if golden questions miss tables that are in the book but not in SIMDASI.
 
-- 2026-11-02: Golden set v0: 30 questions drafted by Claude (`source=claude`), labelled with keyword filters,
+- 2026-11-02: Golden set v0: 30 questions drafted by Claude (`source=claude`) + 40 seeded from a random
+  catalog sample (`source=claude-seeded`), labelled with keyword filters,
   then pooled judging of all methods' top 5 under one rule (asked statistic at asked breakdown). Pass / stop
   is judged on Radikal's real questions (`source=radikal`), not on these.
 - 2026-11-02: SIMDASI kab/kota lists (47 tables) are a subset of the printed Dalam Angka: rainfall (Kota Bekasi),
@@ -66,9 +67,10 @@ in the top 5, better than the site search?
 ## Status
 - Works: catalog builder, region lookup (`src/retrieval/regions.py`), BM25, dense (multilingual-e5-small),
   RRF hybrid, region-aware ranking, eval (`uv run python -m evals.run_eval`).
-- Results on drafted set, partial catalog (national + 1100-1600 + Jabar SIMDASI), R@5 / MRR:
-  bm25 0.57/0.43, bm25+region 0.80/0.72, dense 0.63/0.40, dense+region 0.83/0.59, hybrid+region 0.83/0.75.
-  Region ranking is the big gain. Misses: English questions, acronyms (IPM), short exact titles.
+- Results, 70 Claude-written questions (30 need-based + 40 seeded from a random catalog sample, pooled
+  judging on both), catalog of 20,311 rows (pull in progress), R@5 / MRR: bm25 0.50/0.38, bm25+region
+  0.77/0.62, dense 0.64/0.46, dense+region 0.76/0.57, hybrid+region 0.79/0.65. Region ranking is the big
+  gain. Misses: English topic words, acronyms (IPM, P2), kab/kota names not yet in the region list.
 - Next: catalog pull (`uv run python -m src.ingestion.pull_catalog`, resumable) -> build parquet;
   Radikal fills `evals/golden_set.csv` (~50 questions, see `evals/README.md`).
 - Ideas: (1) finder-first [done: decided] (2) unified catalog index [open] (3) Dalam Angka table index via
