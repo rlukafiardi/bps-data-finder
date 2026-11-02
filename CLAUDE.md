@@ -63,14 +63,19 @@ in the top 5, better than the site search?
   is judged on Radikal's real questions (`source=radikal`), not on these.
 - 2026-11-02: SIMDASI kab/kota lists (47 tables) are a subset of the printed Dalam Angka: rainfall (Kota Bekasi),
   hospitals (Depok), rice production (Kab Karawang) have no table there. PDF route may come back for kab/kota.
+- 2026-11-02: LLM rewrite = Gemini API free tier, `gemini-3.5-flash-lite` (free; prompts may be used by
+  Google, fine for public-statistics questions). Rewrite returns an Indonesian BPS-style query + region;
+  search uses question + rewrite. Cached per model/prompt/question. Prompt examples must not come from
+  eval questions (v2 swapped leaked examples for neutral ones).
 
 ## Status
 - Works: catalog builder, region lookup (`src/retrieval/regions.py`), BM25, dense (multilingual-e5-small),
   RRF hybrid, region-aware ranking, eval (`uv run python -m evals.run_eval`).
-- Results, 70 Claude-written questions (30 need-based + 40 seeded from a random catalog sample, pooled
-  judging on both), catalog of 20,311 rows (pull in progress), R@5 / MRR: bm25 0.50/0.38, bm25+region
-  0.77/0.62, dense 0.64/0.46, dense+region 0.76/0.57, hybrid+region 0.79/0.65. Region ranking is the big
-  gain. Misses: English topic words, acronyms (IPM, P2), kab/kota names not yet in the region list.
+- Results, 70 Claude-written questions (pooled judging), catalog of 20,311 rows (pull in progress), R@5 / MRR:
+  bm25 0.50/0.38, bm25+region 0.79/0.63, hybrid+region 0.80/0.66, rewrite v1+hybrid+region 0.91/0.72,
+  rewrite v2+hybrid+region 0.93/0.75 (`data/processed/eval_rewrite_v2.txt`). Misses left: kab/kota not yet
+  in the region list (Sungai Penuh, Pematangsiantar), "per provinsi" tables only on the 0000 site under
+  another title, period matching (BRS DKI Januari 2025 returns other months).
 - Next: catalog pull (`uv run python -m src.ingestion.pull_catalog`, resumable) -> build parquet;
   Radikal fills `evals/golden_set.csv` (~50 questions, see `evals/README.md`).
 - Ideas: (1) finder-first [done: decided] (2) unified catalog index [open] (3) Dalam Angka table index via

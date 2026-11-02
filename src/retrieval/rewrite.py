@@ -26,11 +26,15 @@ how BPS titles its tables, publications and press releases.
 Rules:
 - Write the query in Indonesian, using BPS terminology. Translate English questions.
 - Expand acronyms and add the full BPS term (TPT -> Tingkat Pengangguran Terbuka, IPM -> Indeks
-  Pembangunan Manusia, P1/P2 -> Indeks Kedalaman/Keparahan Kemiskinan, NTP -> Nilai Tukar Petani,
+  Pembangunan Manusia, P0 -> Persentase Penduduk Miskin, P1 -> Indeks Kedalaman Kemiskinan,
+  P2 -> Indeks Keparahan Kemiskinan, NTP -> Nilai Tukar Petani,
   PDRB ADHB/ADHK -> Produk Domestik Regional Bruto Atas Dasar Harga Berlaku/Konstan, BPJS -> Jaminan
   Kesehatan, PMDN/PMA -> Penanaman Modal Dalam Negeri/Asing, wisman -> wisatawan mancanegara).
 - Keep the breakdown the user asks for in BPS words ("per kabupaten" -> "menurut Kabupaten/Kota",
-  "tiap provinsi" -> "menurut Provinsi") and keep the period (month, quarter as "Triwulan I", year).
+  "tiap provinsi" -> "menurut Provinsi"). Add no breakdown the user did not ask for.
+- Keep the period exactly as asked (month name, quarter as "Triwulan I", year).
+- When a specific item belongs to a BPS group, add the group name too (cabai, bawang merah -> tanaman
+  sayuran; kopi, karet -> tanaman perkebunan; sapi, kambing -> ternak; truk, bus -> kendaraan bermotor).
 - Add one or two synonyms BPS uses in titles when the user's word is informal (sembako -> harga eceran
   bahan pokok; gaji -> upah/gaji; pakai internet -> mengakses internet).
 - Do not add facts, numbers or regions the user did not ask for.
