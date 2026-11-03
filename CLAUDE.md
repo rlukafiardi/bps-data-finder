@@ -68,20 +68,21 @@ in the top 5, better than the site search?
   Google, fine for public-statistics questions). Rewrite returns an Indonesian BPS-style query + region;
   search uses question + rewrite. Cached per model/prompt/question. Prompt examples must not come from
   eval questions (v2 swapped leaked examples for neutral ones).
+- 2026-11-03: POC conditional pass: rewrite+hybrid+region R@5 0.93 vs BPS search 0.19 (+74 points; brief
+  asked >= 0.70 and >= 15 points). Confirm on Radikal's real questions before the full build. Search
+  coverage: second pass at 50/page cut dropped tables from 8.1% to 0.7%; BPS search API returns nothing
+  for most full-sentence queries (199/210 empty), so the baseline is the keyword+retry variant.
 
 ## Status
 - Works: catalog builder, region lookup (`src/retrieval/regions.py`), BM25, dense (multilingual-e5-small),
   RRF hybrid, region-aware ranking, eval (`uv run python -m evals.run_eval`).
-- Results, 70 Claude-written questions (pooled judging), catalog of 20,311 rows (pull in progress), R@5 / MRR:
-  bm25 0.50/0.38, bm25+region 0.79/0.63, hybrid+region 0.80/0.66, rewrite v1+hybrid+region 0.91/0.72,
-  rewrite v2+hybrid+region 0.93/0.75 (`data/processed/eval_rewrite_v2.txt`). Misses left: kab/kota not yet
-  in the region list (Sungai Penuh, Pematangsiantar), "per provinsi" tables only on the 0000 site under
-  another title, period matching (BRS DKI Januari 2025 returns other months).
-- Next (resume here, 2026-11-03): (1) check `data/raw/pull2.out` ends with `exit=0` (second run: full
-  kab/kota list + ~460 SIMDASI kab/kota lists; rerun `uv run python -m src.ingestion.pull_catalog` if not);
-  (2) completeness check: search vs list-endpoint var ids for 0000/3200, SIMDASI lists per province;
-  (3) rebuild catalog; (4) BPS site-search baseline on the 70 questions (`/v1/searching/content`, 3 s apart);
-  (5) full eval; (6) pass / stop with Opus. Radikal adds 10-15 real questions (`source=radikal`) first.
+- Results on the complete catalog (74,938 rows), 70 Claude-written questions, pooled judging, R@5 / MRR:
+  BPS search literal 0.09/0.09, BPS search keywords+retry 0.19/0.15 (`evals/site_search_baseline.py`),
+  bm25+region 0.74/0.58, hybrid+region 0.84/0.64, rewrite v2+hybrid+region 0.93/0.71
+  (`data/processed/eval_full.txt`, `baseline.txt`). Misses: period matching (BRS DKI Januari 2025),
+  per-provinsi tables under other titles, Majalengka revenue.
+- Next: Radikal adds 10-15 real questions (`source=radikal`); rerun eval + baseline (both cached except new
+  questions). R@5 >= 0.70 on them -> POC passed, plan the full build; below -> analyse misses first.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [partly:

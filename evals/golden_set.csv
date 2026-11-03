@@ -30,10 +30,10 @@ kepadatan penduduk per kecamatan kabupaten bogor,simdasi:3201:3.1.1,claude,
 IPM kabupaten kota di jawa barat,simdasi:3200:4.6.5|var:0000:7,claude,relabel after the 3200 search pull (province tables)
 luas kecamatan di kabupaten bandung,simdasi:3204:1.1.1,claude,
 berapa tenaga kerja yang terserap investasi PMDN per kabupaten di lampung,var:1800:795,claude-seeded,
-pertumbuhan ekonomi kabupaten kota jawa tengah,var:3300:1743|var:3300:2380|simdasi:3300:ZzBrcmpMbnAyV1RzRG1EaDNvZ3VIZz09,claude-seeded,pooled judging added 2
+pertumbuhan ekonomi kabupaten kota jawa tengah,var:3300:1743|var:3300:2380|simdasi:3300:ZzBrcmpMbnAyV1RzRG1EaDNvZ3VIZz09|statictable:3300:1428|var:3300:2382,claude-seeded,pooled judging added 2; pooled judging (full catalog) added 2
 P2 kemiskinan jawa barat,var:3200:942,claude-seeded,
 rice yield per hectare south sumatra,var:1600:396|var:1600:782,claude-seeded,english; pooled judging added 1
-PDRB kota sungai penuh per sektor harga konstan,var:1500:1488,claude-seeded,
+PDRB kota sungai penuh per sektor harga konstan,var:1500:1488|simdasi:1572:UklLSnFZZnMzMlJiSWpMOExJODIrQT09,claude-seeded,; pooled judging (full catalog) added 1
 produksi manggis jambi,var:1500:593,claude-seeded,
 jumlah koperasi per kabupaten provinsi jambi,var:1500:1613,claude-seeded,
 komponen IPM bengkulu harapan hidup lama sekolah pengeluaran,var:1700:585|pressrelease:1700:149629,claude-seeded,pooled judging added 1
@@ -45,12 +45,12 @@ national transfer accounts indonesia life cycle deficit,statictable:0000:2276,cl
 produksi daging ayam per kabupaten jawa barat,statictable:3200:387|simdasi:3200:dWhmNFl6WXYyR093R2NjTGM3NG9idz09,claude-seeded,pooled judging added 1
 gaji buruh menurut pendidikan terakhir,statictable:0000:2069|statictable:0000:2133|statictable:0000:2194|statictable:0000:2067|statictable:0000:1989|statictable:0000:2045|statictable:0000:2046|statictable:0000:2047|statictable:0000:1991|statictable:0000:2100|statictable:0000:2192|statictable:0000:2234,claude-seeded,pooled judging added 11
 cakupan imunisasi balita per kabupaten sumut,statictable:1200:1907|statictable:1200:1691|statictable:1200:1213|statictable:1200:2770|statictable:1200:1288,claude-seeded,pooled judging added 4
-harga sembako di pematangsiantar,statictable:1200:2882|statictable:1200:2020|statictable:1200:1358,claude-seeded,pooled judging added 2
+harga sembako di pematangsiantar,statictable:1200:2882|statictable:1200:2020|statictable:1200:1358|publication:0000:bf36d878c5798c171a033709|publication:0000:35a1617def25a0a6c43fddf6,claude-seeded,pooled judging added 2; pooled judging (full catalog) added 2
 kemiskinan kabupaten di bengkulu 2021,statictable:1700:1203,claude-seeded,
 rumah rusak karena bencana per kabupaten bengkulu,simdasi:1700:R1lONkliWXNyUjRqMUdlL2NXK0k2dz09,claude-seeded,
 jumlah motor dan mobil di kepri per kabupaten,simdasi:2100:V2w4dFkwdFNLNU5mSE95Und2UDRMQT09,claude-seeded,
 berapa persen penduduk jambi yang punya BPJS,simdasi:1500:UUROM3lMeGsxZ0czT2xFeEJsK0VWZz09,claude-seeded,
-luas panen jahe kunyit sumatera utara,simdasi:1200:bkZ2NDZsYno2VDR2di9TZldvUUExdz09|statictable:1200:2325|statictable:1200:2572,claude-seeded,pooled judging added 2
+luas panen jahe kunyit sumatera utara,simdasi:1200:bkZ2NDZsYno2VDR2di9TZldvUUExdz09|statictable:1200:2325|statictable:1200:2572|statictable:1200:2996|statictable:1200:2323|statictable:1200:2994|statictable:1200:1513|var:1200:558|simdasi:1200:MnBlci91MjhhS1Fxb1ZmS2NCVUxVZz09,claude-seeded,pooled judging added 2; pooled judging (full catalog) added 6
 PDRB per kapita kabupaten kota bengkulu,simdasi:1700:akhBTUg3b1NjSUNJTExVbE4xT2NMUT09|var:1700:419,claude-seeded,pooled judging added 1
 penduduk usia kerja menurut kegiatan riau,simdasi:1400:NU16V0IxVEJzQXdmTTBKOEJsWUVWQT09|simdasi:1400:UEJPZGxjcUxvWWdkWmFLRUpZanJQUT09|simdasi:1400:WVFiQzIxdEdNc05oVW1HVEY4b2pjdz09,claude-seeded,pooled judging added 2
 literacy rate riau by age group,simdasi:1400:NTVUaUI4bDNBR1NpZDFLZTBISStpdz09,claude-seeded,english
