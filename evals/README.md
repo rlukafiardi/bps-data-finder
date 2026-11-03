@@ -8,10 +8,9 @@
   Domain is the 4-digit BPS code of the site the table sits on (`0000` national, `3200` Jawa Barat,
   `3273` Kota Bandung); a national table "menurut Kabupaten/Kota" is a valid target for a kab/kota question.
   The id is in the BPS link: var / static table id after base64-decoding the link token, pub_id, brs_id.
-- `source`: `radikal` for questions from real searches, `claude` for drafted ones. Drafted questions were
-  written from a need first and labelled afterwards with keyword filters, but they are still easier than
-  real ones: judge pass / stop on `radikal` rows.
-
-Aim for about 50 `radikal` rows, spread over types and levels, including a few you never found.
+- `source`: `claude` (written from a need), `claude-seeded` (written from a random catalog item), or
+  `radikal` / `user` for real searches. Generated questions were labelled with keyword filters plus pooled
+  judging, but are still easier than real ones: add real questions when they become available (e.g. from
+  app logs) and report them separately.
 
     uv run python -m evals.run_eval
