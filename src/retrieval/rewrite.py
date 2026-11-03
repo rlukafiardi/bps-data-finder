@@ -7,9 +7,11 @@ the eval only calls the API for new questions or a changed prompt.
 import hashlib
 import json
 import os
+import threading
 import time
 from pathlib import Path
 
+import httpx2
 from dotenv import load_dotenv
 from google import genai
 from google.genai import errors, types
@@ -19,6 +21,7 @@ from src.config import REWRITE_MODEL, REWRITE_SPACING_S
 CACHE = Path("data/processed/rewrite_cache.jsonl")
 RATE_LIMIT_WAIT_S = 65
 RETRIES = 3
+SERVING_TIMEOUT_MS = 10000  # Gemini rejects deadlines under 10 s
 
 PROMPT = """You rewrite questions about Indonesian official statistics (BPS) into a search query that matches
 how BPS titles its tables, publications and press releases.
@@ -52,11 +55,22 @@ SCHEMA = {
 }
 
 
+class RewriteUnavailable(Exception):
+    pass
+
+
 class Rewriter:
-    def __init__(self, model=REWRITE_MODEL):
+    """serving=True (the API): never wait. A call inside the spacing window, a 429, a server error or a
+    timeout raises RewriteUnavailable at once, and the cache stays in memory (the data folder is
+    read-only there). serving=False (the eval): wait out limits and append to the cache file."""
+
+    def __init__(self, model=REWRITE_MODEL, serving=False):
         load_dotenv(".env")
         self.model = model
-        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        self.serving = serving
+        http_options = types.HttpOptions(timeout=SERVING_TIMEOUT_MS) if serving else None
+        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"], http_options=http_options)
+        self.lock = threading.Lock()
         self.cache = {}
         if CACHE.exists():
             for line in CACHE.read_text().splitlines():
@@ -71,18 +85,41 @@ class Rewriter:
         """{"query": str, "region": str | None}"""
         key = self._key(question)
         if key not in self.cache:
-            result = self._call(question)
+            result = self._call_serving(question) if self.serving else self._call(question)
             self.cache[key] = result
-            with CACHE.open("a") as f:
-                f.write(json.dumps({"key": key, "model": self.model, "question": question, "result": result}) + "\n")
+            if not self.serving:
+                with CACHE.open("a") as f:
+                    f.write(json.dumps({"key": key, "model": self.model, "question": question, "result": result}) + "\n")
         return self.cache[key]
 
-    def _call(self, question):
-        config = types.GenerateContentConfig(
-            system_instruction=PROMPT,
-            response_mime_type="application/json",
-            response_json_schema=SCHEMA,
+    def rewrite_or_none(self, question):
+        try:
+            return self.rewrite(question)
+        except RewriteUnavailable:
+            return None
+
+    def _config(self):
+        return types.GenerateContentConfig(
+            system_instruction=PROMPT, response_mime_type="application/json", response_json_schema=SCHEMA
         )
+
+    def _call_serving(self, question):
+        with self.lock:
+            if time.monotonic() < self.last_call + REWRITE_SPACING_S:
+                raise RewriteUnavailable("inside the spacing window")
+            self.last_call = time.monotonic()
+        try:
+            response = self.client.models.generate_content(model=self.model, contents=question, config=self._config())
+        except errors.ClientError as e:
+            if e.code != 429:
+                raise
+            raise RewriteUnavailable("rate limited") from e
+        except (errors.ServerError, httpx2.TimeoutException) as e:
+            raise RewriteUnavailable(type(e).__name__) from e
+        return json.loads(response.text)
+
+    def _call(self, question):
+        config = self._config()
         for attempt in range(RETRIES):
             time.sleep(max(0.0, self.last_call + REWRITE_SPACING_S - time.monotonic()))
             self.last_call = time.monotonic()
