@@ -68,8 +68,9 @@ in the top 5, better than the site search?
   Google, fine for public-statistics questions). Rewrite returns an Indonesian BPS-style query + region;
   search uses question + rewrite. Cached per model/prompt/question. Prompt examples must not come from
   eval questions (v2 swapped leaked examples for neutral ones).
-- 2026-11-03: POC conditional pass: rewrite+hybrid+region R@5 0.93 vs BPS search 0.19 (+74 points; brief
-  asked >= 0.70 and >= 15 points). Confirm on Radikal's real questions before the full build. Search
+- 2026-11-03: POC passed: rewrite+hybrid+region R@5 0.93 vs BPS search 0.19 (+74 points; brief asked
+  >= 0.70 and >= 15 points). Judged on the 70 Claude-written questions only: Radikal chose not to add real
+  ones (accepted risk: real searches are messier). Collect real queries once there is a user-facing app. Search
   coverage: second pass at 50/page cut dropped tables from 8.1% to 0.7%; BPS search API returns nothing
   for most full-sentence queries (199/210 empty), so the baseline is the keyword+retry variant.
 
@@ -81,8 +82,7 @@ in the top 5, better than the site search?
   bm25+region 0.74/0.58, hybrid+region 0.84/0.64, rewrite v2+hybrid+region 0.93/0.71
   (`data/processed/eval_full.txt`, `baseline.txt`). Misses: period matching (BRS DKI Januari 2025),
   per-provinsi tables under other titles, Majalengka revenue.
-- Next: Radikal adds 10-15 real questions (`source=radikal`); rerun eval + baseline (both cached except new
-  questions). R@5 >= 0.70 on them -> POC passed, plan the full build; below -> analyse misses first.
+- Next: plan the full build (retrieval service, refresh job, delivery: MCP server or web page, values phase 2).
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [partly:
