@@ -92,6 +92,20 @@ def simdasi_lists():
             }
 
 
+def listed_vars():
+    """var rows from the list endpoint, where pulled: they fill tables the search paging dropped."""
+    for path, rows in page_rows("*/var/all/p*.json"):
+        domain = path.parts[-4]
+        for r in rows:
+            yield {
+                "type": "var",
+                "domain": domain,
+                "source_id": str(r["var_id"]),
+                "title": clean(r.get("title")),
+                "text_parts": [r.get("sub_name")],
+            }
+
+
 def var_notes():
     notes = {}
     for path, rows in page_rows("*/var/all/p*.json"):
@@ -106,7 +120,8 @@ def var_notes():
 def main():
     rows = [
         *simdasi_lists(),  # first, so its table_code and years win the dedupe against search rows
-        *search_tables(),
+        *search_tables(),  # before listed_vars, so search rows keep their url in the dedupe
+        *listed_vars(),
         *listed("publication", "pub_id", ["abstract", "subject_csa"]),
         *listed("pressrelease", "brs_id", ["subj", "abstract"]),
     ]
