@@ -36,7 +36,7 @@ def page_rows(pattern):
 
 
 def search_tables():
-    for path, rows in page_rows("search/*/tablestatistic/p*.json"):
+    for path, rows in page_rows("search*/*/tablestatistic/p*.json"):  # search/ and the second pass search50/
         domain = path.parts[-3]
         for r in rows:
             # url: .../statistics-table/{category}/{base64 id}/slug; for var and statictable the id is "<id>#<category>"

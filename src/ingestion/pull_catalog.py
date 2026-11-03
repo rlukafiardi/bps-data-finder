@@ -5,6 +5,8 @@
    "list-not-available" for them, or for publications outside 0000)
 2. SIMDASI (Dalam Angka) table lists for all provinces and kab/kota
 3. var lists with notes for NOTES_DOMAINS (list endpoints are fixed at 10 rows/page)
+4. a second search pass at 50 rows/page into search50/ for domains whose search came back short: the
+   paging is unstable and each pass drops a different set (one pass at 100 missed 8.1% overall)
 
 Resumable: a page already on disk is never fetched again. Stops at the first 401/403, after
 repeated 429/5xx, or at the wall-clock limit; rerun to continue.
@@ -90,6 +92,13 @@ def pull_pages(client, path, params, folder, deadline):
     return n
 
 
+def search_short(domain):
+    pages = [json.loads(p.read_text())["data"] for p in sorted((RAW / "search" / domain / "tablestatistic").glob("p*.json"))]
+    if not pages or not pages[0]:
+        return False
+    return len({r["url"] for p in pages for r in p[1]}) < pages[0][0]["total"]
+
+
 def main(minutes):
     deadline = time.monotonic() + minutes * 60
     RAW.mkdir(parents=True, exist_ok=True)
@@ -129,6 +138,12 @@ def main(minutes):
             path = f"/api/list/model/var/domain/{domain}/key/{{key}}"
             n = pull_pages(client, path, {}, RAW / domain / "var" / "all", deadline)
             print(f"var notes {domain}: {n} pages", flush=True)
+
+        for domain in ["0000"] + provinces:
+            if search_short(domain):
+                path = f"/searching/content/domain/{domain}/model/tablestatistic/key/{{key}}"
+                n = pull_pages(client, path, {"perpage": 50}, RAW / "search50" / domain / "tablestatistic", deadline)
+                print(f"search50 {domain}: {n} pages", flush=True)
 
 
 if __name__ == "__main__":
