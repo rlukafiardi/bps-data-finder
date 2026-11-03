@@ -24,3 +24,12 @@ the work are in `CLAUDE.md`.
 - Links without slug work (HTTP 200, right page): `https://{site}/id/publication/{YYYY/MM/DD rl_date}/{pub_id}`
   and `/id/pressrelease/{YYYY/MM/DD}/{brs_id}`; `{site}` is `www.bps.go.id` or the domain_url. PDF links
   carry a token and are never shown.
+
+## 2026-11-03: risk 4, startup cost (measured locally, M-series Mac)
+
+- Imports 4.4 s, catalog + BM25 2.5 s, e5-small + 75k embeddings 5.4 s, first hybrid query 1.0 s; peak
+  memory ~1.6 GB (`ru_maxrss` is bytes on macOS). torch is 613 MB on disk (macOS wheel).
+- Cloud Run needs 2 GiB; cold start with min instances 0 estimated 15-30 s. Mitigations in order: serve a
+  plain float32 matrix (115 MB) instead of the cache parquet, CPU-only torch wheel in the image (the default
+  Linux wheel bundles CUDA), then an ONNX query encoder without torch. Decide at deploy with a measured cold
+  start. No local Docker: Cloud Build builds the image remotely.
