@@ -83,12 +83,12 @@ in the top 5, better than the site search?
   (`data/processed/eval_full.txt`, `baseline.txt`). Misses: period matching (BRS DKI Januari 2025),
   per-provinsi tables under other titles, Majalengka revenue.
 - Next (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): done: risks 1-4, search API
-  (`app/main.py`, local), region filter (75 golden q: rewrite+hybrid+region R@5 0.93 / MRR 0.70). Radikal:
-  register the public app in the BPS developer portal. Then values, Netlify page, period matching,
-  refresh script, deploy.
+  and values API (`app/main.py`, local only; `uv run pytest -q tests`), region filter (rewrite+hybrid+region
+  R@5 0.93 / MRR 0.70 on 75 q). Not registered as a BPS application (Radikal's call, see log). Then
+  Netlify page (`web/`), period matching, refresh script, deploy.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
-  region filter + kab/kota name stripping] (7) fetch values verbatim (var data, SIMDASI 25 [tested OK], statictable view)
-  [open, after POC] (8) MCP server or web page [open, after POC] (9) period matching (month / quarter /
+  region filter + kab/kota name stripping] (7) fetch values verbatim (var data, SIMDASI 25, statictable view)
+  [done: `src/values/`, `/api/value`] (8) MCP server or web page [open, after POC] (9) period matching (month / quarter /
   year in the question vs title) [open] (10) BPS glosarium endpoint as acronym list [open]

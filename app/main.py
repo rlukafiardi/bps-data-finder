@@ -17,6 +17,8 @@ from src.retrieval.dense import Dense, Hybrid
 from src.retrieval.region_rank import RegionRank
 from src.retrieval.regions import domains, find_regions
 from src.retrieval.rewrite import Rewriter
+from src.values.bps import Busy, BpsError
+from src.values.tables import mark_regions, simdasi_table, static_table, var_table
 
 CATALOG = "data/processed/catalog.parquet"
 SEARCHES_PER_MINUTE = 20  # per client IP
@@ -29,6 +31,7 @@ TYPE_LABELS = {
 }
 
 catalog = pd.read_parquet(CATALOG)
+by_id = catalog.set_index("doc_id", drop=False)
 search = RegionRank(Hybrid(BM25(catalog), Dense(catalog)))
 rewriter = Rewriter(serving=True)
 recent = defaultdict(deque)
@@ -84,4 +87,43 @@ def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
         "rewrite": rewrite,
         "regions": [{"id": d, "name": domains()[d]["name"]} for d in find_regions(text)],
         "results": [result(r) for r in hits.to_dict("records")],
+    }
+
+
+@app.get("/api/value")
+def api_value(
+    request: Request,
+    doc_id: str = Query(max_length=120),
+    period: str | None = Query(None, max_length=10),
+    regions: str = Query("", max_length=60),
+):
+    """The table behind one search result, as BPS gives it. Publications and press releases are links only."""
+    if doc_id not in by_id.index:
+        raise HTTPException(404, "Tabel tidak ditemukan.")
+    if over_limit(request):
+        raise HTTPException(429, "Terlalu banyak permintaan. Coba lagi sebentar.")
+    row = by_id.loc[doc_id]
+    try:
+        if row["type"] == "var":
+            table = var_table(row["domain"], row["source_id"], period)
+        elif row["type"] == "simdasi":
+            table = simdasi_table(row["domain"], row["source_id"], [int(y) for y in row["years"]], period)
+        elif row["type"] == "statictable":
+            table = static_table(row["domain"], row["source_id"])
+        else:
+            raise HTTPException(400, "Publikasi dan Berita Resmi Statistik hanya berupa tautan ke BPS.")
+    except ValueError:
+        raise HTTPException(400, "Periode tidak tersedia.")
+    except Busy:
+        raise HTTPException(429, "Sedang ramai. Coba lagi sebentar.")
+    except BpsError as e:
+        print(json.dumps({"event": "bps_error", "doc_id": doc_id, "error": str(e)}), flush=True)
+        raise HTTPException(502, "BPS belum menjawab. Coba lagi nanti.")
+    table["fetched_at"] = pd.Timestamp(table["fetched_at"], unit="s", tz="UTC").isoformat(timespec="seconds")
+    print(json.dumps({"event": "value", "doc_id": doc_id, "period": table["period"]}), flush=True)
+    return {
+        "doc_id": doc_id,
+        "type": row["type"],
+        "url": row["url"],
+        **mark_regions(table, [d for d in regions.split(",") if d in domains()]),
     }

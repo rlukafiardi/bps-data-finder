@@ -21,6 +21,8 @@ cp .env.example .env   # add BPS_API_KEY; GEMINI_API_KEY (aistudio.google.com) f
 uv run python -m src.ingestion.pull_catalog    # resumable, ~20 requests/min
 uv run python -m src.ingestion.build_catalog   # -> data/processed/catalog.parquet
 uv run python -m evals.run_eval                # Recall@5 / MRR per method
+uv run uvicorn app.main:app --port 8000        # API: /api/search?q=..., /api/value?doc_id=...
+uv run pytest -q tests
 ```
 
 This service uses the Badan Pusat Statistik (BPS) API.

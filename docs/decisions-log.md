@@ -48,3 +48,30 @@ the work are in `CLAUDE.md`.
 - rewrite+hybrid+region R@5 / MRR: before 0.88 / 0.67 (75 q), after 0.93 / 0.70; ladder questions 0.20 -> 1.00,
   original 70 unchanged at 0.93. One genuine shift: "indeks kedalaman kemiskinan tiap provinsi kota dan desa"
   4th -> 6th. Pooled judging added var:1900:1017 (NTP Tanaman Perkebunan Rakyat) for "NTP perkebunan babel".
+
+## 2026-11-03: public app not registered with BPS (Radikal's decision)
+
+- Radikal decided not to register the public website as an application in the BPS developer portal. The
+  terms (section 2) tie each credential to its registered application and let BPS restrict or revoke
+  requests; if the key stops working after the site goes public, check this first.
+
+## 2026-11-03: values (`/api/value`, `src/values/`)
+
+- One shape for all three table types (title, unit, period + available periods, columns, rows with
+  `highlight`, note, source, updated, `fetched_at`). Numbers are the API's own text: var values via the
+  `datacontent` key (vervar + var + turvar + tahun + turtahun), Dalam Angka via each cell's `value`, static
+  tables via the exported HTML. Nothing is computed, rounded or reformatted.
+- BPS client: one slot per 3 s for all visitors together (the key's limit is ~20/min), a visitor whose slot is
+  more than 15 s away gets 429 "coba lagi sebentar"; answers cached 24 h and shown with their fetch time (the
+  terms forbid presenting stale stored data as current). Errors never carry the URL: it contains the key.
+- Dalam Angka tables list columns that most rows have no value for (the province total row has them): a
+  missing cell is shown empty, not treated as an error.
+- Static tables are Excel exports without header tags (title row, header row, data, footnotes). pandas
+  `read_html` corrupted them (years became `2021.0`, thousands separator guesses), so `html_grid` reads the
+  cells with lxml (merged cells repeated across their span). Known limits: a two-level header shows its
+  second row as the first data row; short footnotes (<20 chars, e.g. `*)Backcasting`) stay as data rows.
+- Tests: `tests/test_values.py` (7, inline tables copied from live shapes). A deliberate bug in the value-key
+  order made one fail; after restoring the file a stale `.pyc` (same size, same second) still failed: clear
+  `__pycache__` when a mutation check looks wrong.
+- Live checks through the API: var (national, Jabar), Dalam Angka (Jabar, years 2023/2025), static (Jabar);
+  400 for a publication, an unknown period; 404 for an unknown doc; the key does not appear in the log.
