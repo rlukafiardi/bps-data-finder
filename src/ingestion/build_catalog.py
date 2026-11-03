@@ -70,14 +70,9 @@ def listed(model, id_field, text_fields):
 
 
 def simdasi_lists():
-    domain_urls = {}
-    for path in [RAW / "domains_prov.json", RAW / "domains_kab.json"]:
-        for d in json.loads(path.read_text())["data"][1]:
-            domain_urls[d["domain_id"]] = d["domain_url"].rstrip("/")
     for path in sorted((RAW / "simdasi").glob("*.json")):
         domain = path.stem
         for r in json.loads(path.read_text())["data"][1].get("data") or []:
-            token = base64.b64encode(r["id_tabel"].encode()).decode().rstrip("=")
             yield {
                 "type": "simdasi",
                 "domain": domain,
@@ -87,8 +82,6 @@ def simdasi_lists():
                 "date": r.get("latest_update"),
                 "years": r.get("ketersediaan_tahun"),
                 "table_code": r.get("kode_tabel"),
-                # link pattern copied from search rows of category 3; unverified for kab/kota sites
-                "url": f"{domain_urls[domain]}/id/statistics-table/3/{token}/" if domain in domain_urls else None,
             }
 
 
@@ -104,6 +97,29 @@ def listed_vars():
                 "title": clean(r.get("title")),
                 "text_parts": [r.get("sub_name")],
             }
+
+
+def sites():
+    out = {"0000": "https://www.bps.go.id"}
+    for path in [RAW / "domains_prov.json", RAW / "domains_kab.json"]:
+        for d in json.loads(path.read_text())["data"][1]:
+            out[d["domain_id"]] = d["domain_url"].rstrip("/")
+    return out
+
+
+def built_link(row, site):
+    """Link for rows without one from BPS search. Publication and press-release links were checked
+    (HTTP 200, title in page); table links follow the search pattern but their pages render in the
+    browser, so they stay unverified until the browser test."""
+    if row["type"] in ("publication", "pressrelease"):
+        return f"{site}/id/{row['type']}/{str(row['date'])[:10].replace('-', '/')}/{row['source_id']}"
+    token = {"var": f"{row['source_id']}#2", "simdasi": f"{row['source_id']}#3#{row['domain']}"}[row["type"]]
+    slug = "-".join(re.findall(r"[a-z0-9]+", row["title"].lower()))[:80]
+    return f"{site}/id/statistics-table/{3 if row['type'] == 'simdasi' else 2}/{b64(token)}/{slug}.html"
+
+
+def b64(text):
+    return base64.b64encode(text.encode()).decode().rstrip("=")
 
 
 def var_notes():
@@ -135,12 +151,16 @@ def main():
     bad = (df["source_id"] == "") | (df["title"] == "")
     df[bad].to_parquet(QUARANTINE, index=False)
     out = df[~bad].groupby("doc_id", as_index=False).first()  # simdasi: list row + search row with its url
+    site = sites()
+    out["url_built"] = out["url"].isna()
+    out.loc[out["url_built"], "url"] = [built_link(r, site[r["domain"]]) for r in out[out["url_built"]].to_dict("records")]
     OUT.parent.mkdir(parents=True, exist_ok=True)
     out.to_parquet(OUT, index=False)
 
     print(out.groupby(["type"]).agg(rows=("doc_id", "size"), domains=("domain", "nunique")).to_string())
     print(f"\nrows: {len(out)}, quarantined: {int(bad.sum())}, merged duplicates: {int((~bad).sum()) - len(out)}")
     print(f"var rows with notes: {(out['notes'] != '').sum()}")
+    print("built links (not from BPS search):", out[out["url_built"]].groupby("type").size().to_dict())
 
 
 if __name__ == "__main__":
