@@ -75,3 +75,27 @@ the work are in `CLAUDE.md`.
   `__pycache__` when a mutation check looks wrong.
 - Live checks through the API: var (national, Jabar), Dalam Angka (Jabar, years 2023/2025), static (Jabar);
   400 for a publication, an unknown period; 404 for an unknown doc; the key does not appear in the log.
+
+## 2026-11-03: web page (`web/`) and link checks
+
+- Page: plain HTML/CSS/JS, no build step, Netlify-ready. Welcome card, search box + example chips, result
+  cards (type badge, region, years/date, "Lihat Angkanya" + "Buka di BPS"), value panel (phone: bottom sheet,
+  desktop: right side panel; year picker, sticky header and first column, asked region highlighted and scrolled
+  into view, fetch time, BPS attribution). Text is set with `textContent` only; CSP `script-src 'self'`.
+  Light and dark follow the system. Not done: other languages, a focus trap inside the panel, an About page.
+- Security headers: `web/_headers` (CSP with `connect-src 'self' API_ORIGIN`, frame-ancestors none, nosniff,
+  referrer and permissions policy). At deploy replace `API_ORIGIN` there and `API_BASE` in `web/config.js`;
+  the API's `ALLOWED_ORIGINS` must be the Netlify site.
+- Tests: `npm run test:e2e` (11 checks, real Chrome, fake API replaying recorded responses, served under the
+  real headers; asserts the CSP is not violated, no third-party requests, wording rules, 44 px targets, no
+  sideways scroll, phone/desktop/light layouts; screenshots in `tests/e2e/shots/`, ignored by git).
+  `LIVE=1 npm run test:e2e` runs the page against the real API on :8000 (one Gemini + a few BPS calls).
+  Three deliberate breaks (titles as HTML, no bottom sheet, a stiff word) each failed the matching check.
+- Link checks (`tests/e2e/links.mjs sample.json`, 15 s between pages): publication and press-release links
+  built by us open the right page (6 of 6, including province sites). Tables: BPS's own national link
+  renders; province and kab/kota sites answer headless Chrome with a bot-defense challenge (HTTP 520 on a
+  `TSPD` request), which we do not work around, so their table pages cannot be checked here. Our Dalam Angka
+  token form (`id#3#domain`) equals the 5,271 national/province links BPS gave us; for kab/kota it is
+  unchecked, and the 3 dynamic tables that search never listed fail inside bps.go.id. Those 23,598 + 3 rows
+  now have no link (`url` null): the page shows their numbers but no "Buka di BPS".
+- Found while testing: the BPS websites rate-limit visitors (429 after ~6 page loads in 20 s).

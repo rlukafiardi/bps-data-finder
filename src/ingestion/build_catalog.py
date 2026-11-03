@@ -108,14 +108,18 @@ def sites():
 
 
 def built_link(row, site):
-    """Link for rows without one from BPS search. Publication and press-release links were checked
-    (HTTP 200, title in page); table links follow the search pattern but their pages render in the
-    browser, so they stay unverified until the browser test."""
+    """Link for rows without one from BPS search, or None.
+
+    Publication and press-release links were opened in Chrome (6 of 6 showed their title). A Dalam Angka
+    link uses the token form of the 5,271 national and province links BPS gave us (id#3#domain). For
+    kab/kota it is unchecked (BPS's firewall challenges headless Chrome there), and the 3 dynamic tables
+    search never listed fail to load on bps.go.id, so those rows get no link."""
     if row["type"] in ("publication", "pressrelease"):
         return f"{site}/id/{row['type']}/{str(row['date'])[:10].replace('-', '/')}/{row['source_id']}"
-    token = {"var": f"{row['source_id']}#2", "simdasi": f"{row['source_id']}#3#{row['domain']}"}[row["type"]]
-    slug = "-".join(re.findall(r"[a-z0-9]+", row["title"].lower()))[:80]
-    return f"{site}/id/statistics-table/{3 if row['type'] == 'simdasi' else 2}/{b64(token)}/{slug}.html"
+    if row["type"] == "simdasi" and row["domain"].endswith("00"):
+        slug = "-".join(re.findall(r"[a-z0-9]+", row["title"].lower()))[:80]
+        return f"{site}/id/statistics-table/3/{b64(row['source_id'] + '#3#' + row['domain'])}/{slug}.html"
+    return None
 
 
 def b64(text):
@@ -161,6 +165,7 @@ def main():
     print(f"\nrows: {len(out)}, quarantined: {int(bad.sum())}, merged duplicates: {int((~bad).sum()) - len(out)}")
     print(f"var rows with notes: {(out['notes'] != '').sum()}")
     print("built links (not from BPS search):", out[out["url_built"]].groupby("type").size().to_dict())
+    print("rows without a link:", out[out["url"].isna()].groupby("type").size().to_dict())
 
 
 if __name__ == "__main__":

@@ -8,8 +8,8 @@ from src.values import bps, tables
 EXCEL_TABLE = """<table>
 <tr><td colspan=4>Jumlah Penduduk Miskin Menurut Kabupaten/Kota di Jawa Barat, 2002-2003</td></tr>
 <tr><td></td><td></td><td></td><td></td></tr>
-<tr><td rowspan=2>Wilayah</td><td>2002</td><td>2003</td><td></td></tr>
-<tr><td>(1)</td><td>(2)</td><td></td></tr>
+<tr><td>Wilayah</td><td>2002</td><td>2003</td><td></td></tr>
+<tr><td>[1]</td><td>[2]</td><td>[3]</td><td></td></tr>
 <tr><td>1. Bogor</td><td>4.938,3</td><td>-</td><td></td></tr>
 <tr><td>23. Kota Bandung</td><td>5,00</td><td>4,5</td><td></td></tr>
 <tr><td colspan=4>Sumber: BPS, Susenas, dengan catatan yang cukup panjang</td></tr>
@@ -26,8 +26,8 @@ def test_static_table_title_header_data_and_footnote(monkeypatch):
     monkeypatch.setattr(tables, "get", lambda path, params=None: (payload, 0.0))
     t = tables.static_table("3200", "121")
     assert t["columns"] == ["2002", "2003"]  # title row and empty column dropped
-    assert [r["label"] for r in t["rows"]] == ["Wilayah", "1. Bogor", "23. Kota Bandung"]  # 2nd header row stays as data
-    assert t["rows"][1]["values"] == ["4.938,3", "-"]  # text exactly as BPS wrote it
+    assert [r["label"] for r in t["rows"]] == ["1. Bogor", "23. Kota Bandung"]  # the [1] [2] numbering row is dropped
+    assert t["rows"][0]["values"] == ["4.938,3", "-"]  # text exactly as BPS wrote it
     assert t["note"] == "Sumber: BPS, Susenas, dengan catatan yang cukup panjang"
 
 

@@ -82,13 +82,13 @@ in the top 5, better than the site search?
   bm25+region 0.74/0.58, hybrid+region 0.84/0.64, rewrite v2+hybrid+region 0.93/0.71
   (`data/processed/eval_full.txt`, `baseline.txt`). Misses: period matching (BRS DKI Januari 2025),
   per-provinsi tables under other titles, Majalengka revenue.
-- Next (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): done: risks 1-4, search API
-  and values API (`app/main.py`, local only; `uv run pytest -q tests`), region filter (rewrite+hybrid+region
-  R@5 0.93 / MRR 0.70 on 75 q). Not registered as a BPS application (Radikal's call, see log). Then
-  Netlify page (`web/`), period matching, refresh script, deploy.
+- Next (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): done: risks 1-4, search API,
+  values API, region filter (rewrite+hybrid+region R@5 0.93 / MRR 0.70 on 75 q), web page `web/` (local;
+  `uv run pytest -q tests`, `npm run test:e2e`). Not registered as a BPS application (Radikal's call). Then
+  period matching, refresh script, architecture diagram, deploy (Netlify page + Cloud Run API, on Radikal's go).
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
   region filter + kab/kota name stripping] (7) fetch values verbatim (var data, SIMDASI 25, statictable view)
-  [done: `src/values/`, `/api/value`] (8) MCP server or web page [open, after POC] (9) period matching (month / quarter /
+  [done: `src/values/`, `/api/value`] (8) web page [done, local; MCP server dropped] (9) period matching (month / quarter /
   year in the question vs title) [open] (10) BPS glosarium endpoint as acronym list [open]

@@ -7,3 +7,5 @@ data/**/*
 !data/**/
 !data/**/.gitkeep
 .pytest_cache/
+node_modules/
+tests/e2e/shots/

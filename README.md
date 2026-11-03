@@ -23,6 +23,8 @@ uv run python -m src.ingestion.build_catalog   # -> data/processed/catalog.parqu
 uv run python -m evals.run_eval                # Recall@5 / MRR per method
 uv run uvicorn app.main:app --port 8000        # API: /api/search?q=..., /api/value?doc_id=...
 uv run pytest -q tests
+npm install && npm run test:e2e                # page in real Chrome against a fake API
+npm run serve -- 8080 http://localhost:8000    # the page on http://localhost:8080
 ```
 
 This service uses the Badan Pusat Statistik (BPS) API.

@@ -23,11 +23,11 @@ from src.values.tables import mark_regions, simdasi_table, static_table, var_tab
 CATALOG = "data/processed/catalog.parquet"
 SEARCHES_PER_MINUTE = 20  # per client IP
 TYPE_LABELS = {
-    "var": "Tabel dinamis",
-    "statictable": "Tabel statis",
-    "simdasi": "Tabel Daerah Dalam Angka",
+    "var": "Tabel angka",
+    "statictable": "Tabel arsip",
+    "simdasi": "Daerah Dalam Angka",
     "publication": "Publikasi",
-    "pressrelease": "Berita Resmi Statistik",
+    "pressrelease": "Berita Resmi",
 }
 
 catalog = pd.read_parquet(CATALOG)
