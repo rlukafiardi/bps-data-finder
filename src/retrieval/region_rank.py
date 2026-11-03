@@ -5,9 +5,11 @@ national are searched, ranked in that order of preference. Kab/kota names are re
 is scored: every Dalam Angka table of a kab/kota repeats its name, which put off-topic tables of that
 kab/kota above the province table "menurut Kabupaten/Kota" that answers the question. Province and
 national names stay: they are part of the titles that answer ("Statistik Indonesia", "Provinsi Sumatera
-Utara Dalam Angka").
+Utara Dalam Angka"). When the question names a month, quarter or year, titles that agree are boosted and
+titles that name a different one are demoted (see period.py): BM25 cannot tell "Januari 2025" from "Juli 2025".
 """
 
+from src.retrieval.period import factor, of_row, periods
 from src.retrieval.regions import domains, find_regions, strip_regions
 
 CANDIDATES = 300
@@ -41,4 +43,7 @@ class RegionRank:
         hits = self.base.search(strip_regions(question, kab_kota), k=CANDIDATES, domains=set(weights))
         hits = hits[hits["domain"].isin(weights)]  # BM25 can fill k with masked, zero-score rows
         hits = hits.assign(score=hits["score"] * hits["domain"].map(weights))
+        asked = periods(question)
+        if any(asked.values()):
+            hits = hits.assign(score=hits["score"] * [factor(asked, of_row(r)) for r in hits.to_dict("records")])
         return hits.sort_values("score", ascending=False).head(k)

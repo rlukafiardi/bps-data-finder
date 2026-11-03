@@ -38,12 +38,12 @@ produksi manggis jambi,var:1500:593,claude-seeded,
 jumlah koperasi per kabupaten provinsi jambi,var:1500:1613,claude-seeded,
 komponen IPM bengkulu harapan hidup lama sekolah pengeluaran,var:1700:585|pressrelease:1700:149629,claude-seeded,pooled judging added 1
 persentase penduduk kepri yang pakai internet,var:2100:714|var:0000:1225|var:0000:558,claude-seeded,pooled judging added 2
-NTP perkebunan babel,var:1900:1011|var:1900:1017,claude-seeded,pooled judging (region filter) added 1
+NTP perkebunan babel,var:1900:1011|var:1900:1017|var:1900:1206,claude-seeded,pooled judging (region filter) added 1; pooled judging (title weight) added 1
 indeks kedalaman kemiskinan tiap provinsi kota dan desa,var:0000:503,claude-seeded,
-pendapatan daerah kabupaten majalengka,var:3200:488,claude-seeded,
+pendapatan daerah kabupaten majalengka,var:3200:488|statictable:3200:134,claude-seeded,; pooled judging (title weight) added 1
 national transfer accounts indonesia life cycle deficit,statictable:0000:2276,claude-seeded,english
 produksi daging ayam per kabupaten jawa barat,statictable:3200:387|simdasi:3200:dWhmNFl6WXYyR093R2NjTGM3NG9idz09,claude-seeded,pooled judging added 1
-gaji buruh menurut pendidikan terakhir,statictable:0000:2069|statictable:0000:2133|statictable:0000:2194|statictable:0000:2067|statictable:0000:1989|statictable:0000:2045|statictable:0000:2046|statictable:0000:2047|statictable:0000:1991|statictable:0000:2100|statictable:0000:2192|statictable:0000:2234,claude-seeded,pooled judging added 11
+gaji buruh menurut pendidikan terakhir,statictable:0000:2069|statictable:0000:2133|statictable:0000:2194|statictable:0000:2067|statictable:0000:1989|statictable:0000:2045|statictable:0000:2046|statictable:0000:2047|statictable:0000:1991|statictable:0000:2100|statictable:0000:2192|statictable:0000:2234|var:0000:2818|var:0000:575|var:0000:2474,claude-seeded,pooled judging added 11; pooled judging (title weight) added 3
 cakupan imunisasi balita per kabupaten sumut,statictable:1200:1907|statictable:1200:1691|statictable:1200:1213|statictable:1200:2770|statictable:1200:1288,claude-seeded,pooled judging added 4
 harga sembako di pematangsiantar,statictable:1200:2882|statictable:1200:2020|statictable:1200:1358|publication:0000:bf36d878c5798c171a033709|publication:0000:35a1617def25a0a6c43fddf6,claude-seeded,pooled judging added 2; pooled judging (full catalog) added 2
 kemiskinan kabupaten di bengkulu 2021,statictable:1700:1203,claude-seeded,
@@ -74,3 +74,16 @@ jumlah penduduk miskin kabupaten garut,simdasi:3200:REdXbUdSVjIzUlJTT0Z5Vy9Rd3Zm
 IPM kabupaten sleman,simdasi:3400:WnFhSGhLZ2xHNmlZdkRRYzRsaG5Hdz09|var:0000:7,claude-ladder,kab/kota has no own table; answered at province or national level
 angka harapan hidup kabupaten banyumas,statictable:3300:2613|var:0000:455|var:3300:2035|var:3300:2412|var:3300:780|var:3300:781,claude-ladder,kab/kota has no own table; answered at province or national level
 PDRB per kapita kabupaten badung,simdasi:5100:OXA5V0V0c1NhM09HUnZ4UHhnaHlWZz09|simdasi:5100:akhBTUg3b1NjSUNJTExVbE4xT2NMUT09|var:5100:172,claude-ladder,kab/kota has no own table; answered at province or national level
+inflasi Maret 2025 Sumatera Barat,pressrelease:1300:151553,claude-period,month / quarter / year in the question
+pertumbuhan ekonomi Riau triwulan II 2025,pressrelease:1400:150779,claude-period,month / quarter / year in the question
+NTP Juni 2025 Sumut,pressrelease:1200:150316,claude-period,month / quarter / year in the question
+ekspor impor Jakarta Februari 2025,pressrelease:3100:152364,claude-period,month / quarter / year in the question
+inflasi Desember 2024 Aceh,pressrelease:1100:151446,claude-period,month / quarter / year in the question
+wisman Aceh April 2026,pressrelease:1100:169444,claude-period,month / quarter / year in the question
+IHK Jakarta Juli 2025,pressrelease:3100:151700,claude-period,month / quarter / year in the question
+statistik nilai tukar petani 2024,publication:0000:291aa5af0e7cc933bfe5b6a7,claude-period,month / quarter / year in the question
+aceh dalam angka 2025,publication:1100:7f5ac7bf4db9fde8b4644778,claude-period,month / quarter / year in the question
+pertumbuhan ekonomi indonesia triwulan I 2026,pressrelease:0000:169698,claude-period,month / quarter / year in the question
+persentase penduduk miskin Jambi September 2025,pressrelease:1500:167829,claude-period,month / quarter / year in the question
+keadaan ketenagakerjaan DKI Jakarta Februari 2025,pressrelease:3100:152743,claude-period,month / quarter / year in the question
+Riau economic growth Q2 2025,pressrelease:1400:150779,claude-period,english

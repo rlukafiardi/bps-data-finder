@@ -20,11 +20,18 @@ def doc_text(row):
     return " ".join(str(p) for p in (row["title"], region, row["body"], row["notes"], row["table_code"]) if p)
 
 
+TITLE_WEIGHT = 5  # times the title is counted: BM25 divides by length, so a long abstract buried it (flat from 5 to 12, worse at 20)
+
+
+def bm25_text(row):
+    return " ".join([doc_text(row)] + [row["title"]] * (TITLE_WEIGHT - 1))
+
+
 class BM25:
     def __init__(self, catalog):
         self.catalog = catalog.reset_index(drop=True)
         self.model = bm25s.BM25()
-        self.model.index([tokenize(doc_text(r)) for r in self.catalog.to_dict("records")], show_progress=False)
+        self.model.index([tokenize(bm25_text(r)) for r in self.catalog.to_dict("records")], show_progress=False)
 
     def search(self, question, k=5, domains=None):
         """Top-k catalog rows with a `score` column; `domains` limits scoring to those domain ids."""

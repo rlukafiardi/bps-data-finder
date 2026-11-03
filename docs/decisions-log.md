@@ -99,3 +99,31 @@ the work are in `CLAUDE.md`.
   unchecked, and the 3 dynamic tables that search never listed fail inside bps.go.id. Those 23,598 + 3 rows
   now have no link (`url` null): the page shows their numbers but no "Buka di BPS".
 - Found while testing: the BPS websites rate-limit visitors (429 after ~6 page loads in 20 s).
+
+## 2026-11-03: period matching and BM25 title weight
+
+- Trigger: "BRS DKI Januari 2025" never found its exact-title publication. Cause: BM25 divides by document
+  length and BRS publications carry long abstracts (979 chars vs an empty one for "Juli 2025"), and the abstract
+  names the data month (Desember 2024), not the release month; the exact title ranked 98th in dense and
+  beyond 300th in BM25, so no re-ranking could save it.
+- Two changes, measured separately (88 questions, rewrite+hybrid+region R@5 / MRR; baseline 0.932 / 0.729):
+  1. Period matching (`src/retrieval/period.py`, applied in `RegionRank`): month / quarter / year parsed from
+     the question and each title (ranges expanded, glued "Desember2024" handled, base years like "Seri 2010",
+     "2018=100", "SP2020" ignored; Dalam Angka rows use the years BPS has them for). Agreement boosts the
+     score (x1.3 month / quarter, x1.15 year), a different period demotes it (x0.7 / x0.75), a title without
+     a period is left alone. Alone: 0.943 / 0.737; period questions 0.92 -> 1.00. It cannot fix a document
+     that is missing from the candidates.
+  2. BM25 title weight 5 (`TITLE_WEIGHT`, title counted 5 times): tried 1, 2, 3, 5, 8, 12, 20 on all
+     questions; flat from 5 to 12 (Recall@5 0.943-0.955), worse at 20 (kab/kota fallback questions slip).
+     Took 5, the lowest value on the plateau, so abstracts still count. Together: 0.955 / 0.800.
+- 13 period questions added before the change (`source=claude-period`, labelled by title keywords).
+  16 questions improved, 6 got worse; the two big "regressions" were label gaps (the new ranking found
+  other tables that answer the question: current wage tables by education, "NTP Menurut Subsektor") and
+  were added by pooled judging under the same rule as before. Final: **0.977 / 0.831**; misses left:
+  "garis kemiskinan provinsi" (rank 8), "harga sembako di pematangsiantar" (rank 7).
+- A first unit test for the title weight passed even with the weight reverted (it set the weight itself);
+  rewritten to use the shipped value, then confirmed to fail on a revert.
+- Not done, by size: page numbers inside publications. The catalog holds only title, abstract and PDF link.
+  Page-level search needs the PDFs read: all 3,649 PDFs of 2025-2026 are 36 GB (median 7.6 MB, 479 over 20 MB),
+  too much at the BPS rate limit; the 80 yearbooks (Dalam Angka, Statistik Indonesia) are 1.1 GB. PDF links
+  carry a token, whether they are text or scans is unchecked, and bulk downloads need a look at the terms.
