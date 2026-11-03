@@ -26,10 +26,11 @@ class BM25:
         self.model = bm25s.BM25()
         self.model.index([tokenize(doc_text(r)) for r in self.catalog.to_dict("records")], show_progress=False)
 
-    def search(self, question, k=5):
-        """Top-k catalog rows with a `score` column."""
+    def search(self, question, k=5, domains=None):
+        """Top-k catalog rows with a `score` column; `domains` limits scoring to those domain ids."""
         tokens = tokenize(question)
         if not tokens:
             return self.catalog.iloc[0:0].assign(score=[])
-        idx, scores = self.model.retrieve([tokens], k=k, show_progress=False)
+        mask = self.catalog["domain"].isin(domains).to_numpy(dtype=float) if domains else None
+        idx, scores = self.model.retrieve([tokens], k=k, show_progress=False, weight_mask=mask)
         return self.catalog.iloc[idx[0]].assign(score=np.round(scores[0], 3))

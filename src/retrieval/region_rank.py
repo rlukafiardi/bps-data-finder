@@ -1,12 +1,14 @@
 """Region-aware ranking on top of a base retriever.
 
-No region in the question: national (0000) only. Regions named: those domains, their province, and
-national, ranked in that order of preference. Region abbreviations are expanded in the query.
+No region in the question: national (0000) only. Regions named: only those domains, their province and
+national are searched, ranked in that order of preference. Kab/kota names are removed from the text that
+is scored: every Dalam Angka table of a kab/kota repeats its name, which put off-topic tables of that
+kab/kota above the province table "menurut Kabupaten/Kota" that answers the question. Province and
+national names stay: they are part of the titles that answer ("Statistik Indonesia", "Provinsi Sumatera
+Utara Dalam Angka").
 """
 
-import pandas as pd
-
-from src.retrieval.regions import domains, find_regions
+from src.retrieval.regions import domains, find_regions, strip_regions
 
 CANDIDATES = 300
 WEIGHTS = {"own": 1.0, "province": 0.85, "national": 0.7}
@@ -34,9 +36,9 @@ class RegionRank:
 
     def search(self, question, k=5):
         region_ids = find_regions(question)
-        names = " ".join(domains()[d]["name"] for d in region_ids)
-        hits = self.base.search(f"{question} {names}", k=CANDIDATES)
         weights = allowed_domains(region_ids)
-        hits = hits[hits["domain"].isin(weights)]
+        kab_kota = [d for d in region_ids if domains()[d]["level"] in ("kab", "kota")]
+        hits = self.base.search(strip_regions(question, kab_kota), k=CANDIDATES, domains=set(weights))
+        hits = hits[hits["domain"].isin(weights)]  # BM25 can fill k with masked, zero-score rows
         hits = hits.assign(score=hits["score"] * hits["domain"].map(weights))
         return hits.sort_values("score", ascending=False).head(k)

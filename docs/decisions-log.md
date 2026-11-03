@@ -33,3 +33,18 @@ the work are in `CLAUDE.md`.
   plain float32 matrix (115 MB) instead of the cache parquet, CPU-only torch wheel in the image (the default
   Linux wheel bundles CUDA), then an ONNX query encoder without torch. Decide at deploy with a measured cold
   start. No local Docker: Cloud Build builds the image remotely.
+
+## 2026-11-03: region filter + kab/kota name stripping (fallback ladder)
+
+- Found by using the API: "TPT kota bandung 2025" and "jumlah penduduk miskin kabupaten garut" returned
+  off-topic Dalam Angka tables of that kab/kota (civil servants, health workers): its own tables all repeat
+  "di Kota X", which BM25 rewarded, while the answer was the province table "menurut Kabupaten/Kota".
+- Added 5 golden questions for the case (`source=claude-ladder`, labelled with keyword filters before the
+  change): kab/kota with no own table, answered at province or national level.
+- Fix: retrievers take an allowed-domain set (bm25s `weight_mask`, dense score mask); RegionRank searches
+  only kab/kota + province + national, and removes **kab/kota** names from the scored text. Removing
+  province/national names too cost 5 questions whose answering titles contain the name ("Statistik
+  Indonesia 2026", "Provinsi Sumatera Utara Dalam Angka 2026"), so those stay.
+- rewrite+hybrid+region R@5 / MRR: before 0.88 / 0.67 (75 q), after 0.93 / 0.70; ladder questions 0.20 -> 1.00,
+  original 70 unchanged at 0.93. One genuine shift: "indeks kedalaman kemiskinan tiap provinsi kota dan desa"
+  4th -> 6th. Pooled judging added var:1900:1017 (NTP Tanaman Perkebunan Rakyat) for "NTP perkebunan babel".

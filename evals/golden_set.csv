@@ -38,7 +38,7 @@ produksi manggis jambi,var:1500:593,claude-seeded,
 jumlah koperasi per kabupaten provinsi jambi,var:1500:1613,claude-seeded,
 komponen IPM bengkulu harapan hidup lama sekolah pengeluaran,var:1700:585|pressrelease:1700:149629,claude-seeded,pooled judging added 1
 persentase penduduk kepri yang pakai internet,var:2100:714|var:0000:1225|var:0000:558,claude-seeded,pooled judging added 2
-NTP perkebunan babel,var:1900:1011,claude-seeded,
+NTP perkebunan babel,var:1900:1011|var:1900:1017,claude-seeded,pooled judging (region filter) added 1
 indeks kedalaman kemiskinan tiap provinsi kota dan desa,var:0000:503,claude-seeded,
 pendapatan daerah kabupaten majalengka,var:3200:488,claude-seeded,
 national transfer accounts indonesia life cycle deficit,statictable:0000:2276,claude-seeded,english
@@ -69,3 +69,8 @@ wisman ke sumut oktober 2025,pressrelease:1200:152220,claude-seeded,
 ekonomi babel tw I 2026 tumbuh berapa,pressrelease:1900:169749|publication:1900:89074f7d0000d756a84e8fc3,claude-seeded,pooled judging added 1
 inflasi yoy sumbar desember 2024,pressrelease:1300:151448|var:1300:172,claude-seeded,pooled judging added 1
 jumlah penumpang pesawat di aceh desember 2024,pressrelease:1100:150944,claude-seeded,
+TPT kota bandung 2025,simdasi:3200:WjNUbVprTDh4SjN4RXhLaUptMHZqQT09|var:0000:2824|var:3200:73|var:3200:788|var:3200:837,claude-ladder,kab/kota has no own table; answered at province or national level
+jumlah penduduk miskin kabupaten garut,simdasi:3200:REdXbUdSVjIzUlJTT0Z5Vy9Rd3ZmQT09|statictable:3200:121|var:0000:619|var:3200:83,claude-ladder,kab/kota has no own table; answered at province or national level
+IPM kabupaten sleman,simdasi:3400:WnFhSGhLZ2xHNmlZdkRRYzRsaG5Hdz09|var:0000:7,claude-ladder,kab/kota has no own table; answered at province or national level
+angka harapan hidup kabupaten banyumas,statictable:3300:2613|var:0000:455|var:3300:2035|var:3300:2412|var:3300:780|var:3300:781,claude-ladder,kab/kota has no own table; answered at province or national level
+PDRB per kapita kabupaten badung,simdasi:5100:OXA5V0V0c1NhM09HUnZ4UHhnaHlWZz09|simdasi:5100:akhBTUg3b1NjSUNJTExVbE4xT2NMUT09|var:5100:172,claude-ladder,kab/kota has no own table; answered at province or national level

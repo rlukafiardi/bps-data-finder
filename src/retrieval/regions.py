@@ -76,3 +76,11 @@ def find_regions(question):
         taken.append((start, end, alias))
         found.append(dom)
     return list(dict.fromkeys(found))
+
+
+def strip_regions(text, region_ids):
+    """The text without the names of the given regions, longest alias first."""
+    q = f" {normalize(text)} "
+    for alias in sorted({a for d in region_ids for a in domains()[d]["aliases"]}, key=len, reverse=True):
+        q = q.replace(f" {alias} ", " ")
+    return " ".join(q.split())

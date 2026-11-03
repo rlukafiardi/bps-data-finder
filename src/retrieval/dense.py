@@ -39,9 +39,11 @@ class Dense:
             ).to_parquet(CACHE, index=False)
         return np.stack([known[key] for key in zip(doc_ids, texts)]).astype(np.float32)
 
-    def search(self, question, k=5):
+    def search(self, question, k=5, domains=None):
         q = self.model.encode(f"query: {question}", normalize_embeddings=True)
         scores = self.vectors @ q
+        if domains:
+            scores = np.where(self.catalog["domain"].isin(domains).to_numpy(), scores, -np.inf)
         top = np.argsort(-scores)[:k]
         return self.catalog.iloc[top].assign(score=np.round(scores[top], 4))
 
@@ -53,11 +55,11 @@ class Hybrid:
         self.retrievers = retrievers
         self.depth = depth
 
-    def search(self, question, k=5):
+    def search(self, question, k=5, domains=None):
         fused = {}
         rows = {}
         for retriever in self.retrievers:
-            hits = retriever.search(question, k=self.depth)
+            hits = retriever.search(question, k=self.depth, domains=domains)
             for rank, (doc_id, row) in enumerate(zip(hits["doc_id"], hits.to_dict("records")), start=1):
                 fused[doc_id] = fused.get(doc_id, 0) + 1 / (RRF_K + rank)
                 rows.setdefault(doc_id, row)
