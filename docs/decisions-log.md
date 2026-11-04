@@ -179,3 +179,30 @@ the work are in `CLAUDE.md`.
   table.
 - Open: kab/kota Dalam Angka link format still unverified; (12) rank tables with an old newest year lower when the
   question names no year (Garut question puts a 2002-2016 table first).
+
+## 2026-11-04: web page ideas after the redesign (all open, ranked by value for cost)
+
+Before deploy: (13) slow-server message after ~5 s (Cloud Run cold start 15-30 s is an estimate, not measured);
+(14) "Cocok?" Ya/Tidak buttons per result, logged with question + doc_id, no IP, rate limited: real labels for the
+next golden set. Cheap: (15) "Salin kutipan" button (BPS website terms section 13 require credit with title,
+access date, direct link); (16) CSV download of the shown table, cells as given; (17) `?q=...&buka=<id>` link that
+opens a table. Bigger: (18) small chart of the asked region's row for years-across tables (numbers parsed from
+"1.110,92" for drawing only, needs a parse test); (19) a region dropdown to correct a wrongly recognised region.
+Low: light/dark toggle (page follows the device setting, no switch), panel focus trap, recent searches, English.
+Outside the page: idea 12 (rank old tables lower).
+
+## 2026-11-04: ideas 10, 12, 13
+
+- (13) done: the page shows "Servernya baru bangun..." when a search takes over 5 s (`SLOW_AFTER_MS`), cleared when the
+  answer arrives. Browser step added; fails if the timer is never cleared (it overwrote the result count) or the
+  threshold is raised to 50 s.
+- (10) blocked: `/v1/api/list/model/glosarium/key/{key}` returned HTTP 500 `{"status":"Error","message":"This service is
+  currently unavailable"}` with no parameters, with `prefix=t`, and with `prefix=t&perpage=500` (3 calls, 3 s apart). Not
+  our parameters; retry on another day before dropping. Not built: nothing to put in the prompt without the entries.
+- (12) dropped: demoting tables whose newest title year is older than today minus 2 (no year in the question), measured
+  on the 88-question set with the cached rewrite (baseline R@5 0.977, MRR 0.831): all old-year tables, factor 0.85 ->
+  0.966 / 0.812, 0.7 -> 0.955 / 0.810; archive tables only (`statictable`), 0.85 -> 0.977 / 0.821, 0.7 -> 0.966 / 0.820.
+  The Garut question improved (archive "2002-2016" tables left the top 5), but 4-5 golden questions gained one rank and
+  1-2 lost their top-1, because their golden answer is an old table ("2008 - 2017" visitors; a regional-revenue archive).
+  Old tables are valid answers, so the page keeps the "Data lama" tag and does not mark an old table "Paling cocok".
+  Reopen if real feedback (idea 14) shows people skipping old tables.

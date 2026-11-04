@@ -219,6 +219,23 @@ if (LIVE) {
     await noBanned(page);
   });
 
+  await step("a slow search says the server is waking up; a fast one never does", async () => {
+    const { page } = await open();
+    await page.click("#welcome-start");
+    await search(page, "tanpa daerah");
+    await resultsReady(page);
+    await new Promise((r) => setTimeout(r, 5500)); // past the slow timer: a timer left running would overwrite the count
+    assert.match(await text(page, "#status"), /^5 hasil paling cocok$/);
+
+    await page.$eval("#results", (n) => n.replaceChildren());
+    await search(page, "lambat");
+    await page.waitForFunction(() => /setengah menit/.test(document.getElementById("status").textContent), { timeout: 5800 });
+    assert.match(await text(page, "#status"), /baru bangun/);
+    await page.waitForFunction(() => /hasil paling cocok/.test(document.getElementById("status").textContent));
+    assert.doesNotMatch(await text(page, "#status"), /bangun/);
+    await noBanned(page);
+  });
+
   await step("a result without a BPS link shows the numbers but no link", async () => {
     const { page } = await open();
     await page.click("#welcome-start");

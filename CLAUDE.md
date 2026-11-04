@@ -91,5 +91,5 @@ in the top 5, better than the site search?
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
   region filter + kab/kota name stripping] (7) fetch values verbatim (var data, SIMDASI 25, statictable view)
   [done: `src/values/`, `/api/value`] (8) web page [done, local; redesigned answer-first 2026-11-04; MCP server dropped] (9) period matching (month / quarter /
-  year in the question vs title) [done] + BM25 title weight 5 [done] (10) BPS glosarium endpoint as acronym list [open] (11) page numbers in publications: read the 80
-  yearbook PDFs (1.1 GB; all 3,649 are 36 GB) [parked 2026-11-04: pilot works on one book, value unmeasured, see decisions log] (12) rank tables with an old newest year lower when the question names no year [open]
+  year in the question vs title) [done] + BM25 title weight 5 [done] (10) BPS glosarium endpoint as acronym list [blocked 2026-11-04: endpoint returns HTTP 500 "service is currently unavailable"; retry later] (11) page numbers in publications: read the 80
+  yearbook PDFs (1.1 GB; all 3,649 are 36 GB) [parked 2026-11-04: pilot works on one book, value unmeasured, see decisions log] (12) rank tables with an old newest year lower when the question names no year [dropped 2026-11-04: no eval gain, see decisions log] (13) slow-server message [done 2026-11-04]; (14-19) web ideas: Cocok? feedback buttons, copy citation, CSV, open-table link, chart, region dropdown [all open, ranked in decisions log]

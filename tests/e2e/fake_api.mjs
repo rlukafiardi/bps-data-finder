@@ -22,6 +22,7 @@ export function fakeApi(port) {
       if (q.includes("putus")) return req.socket.destroy();
       if (q.includes("limit")) return send(429, { detail: "Terlalu banyak pencarian. Coba lagi sebentar." });
       if (q.includes("kosong")) return send(200, { ...fixture("search.json"), question: q, results: [], regions: [] });
+      if (q.includes("lambat")) return void setTimeout(() => send(200, { ...fixture("search.json"), question: q }), 6000);
       if (q.includes("tanpa daerah")) return send(200, { ...fixture("search.json"), question: q, regions: [] });
       if (q.includes("xss")) {
         const hostile = fixture("search.json");

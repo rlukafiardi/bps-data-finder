@@ -4,6 +4,7 @@ const API = window.API_BASE;
 const $ = (id) => document.getElementById(id);
 const TIMEOUT_MS = 45000; // a value can wait up to 15 s for a free slot with BPS, then BPS itself answers
 
+const SLOW_AFTER_MS = 5000; // a server that slept starts in 15-30 s (estimate): say so instead of a bare "Mencari..."
 const OLD_AFTER_YEARS = 2; // a table whose newest year is older than this many years ago gets a "Data lama" tag
 const YEAR = /(?:19|20)\d{2}/;
 const WIDE = matchMedia("(min-width: 900px)"); // panel sits beside the results instead of over them
@@ -84,11 +85,16 @@ async function search(question) {
   setStatus($("status"), "Mencari...");
   $("results").replaceChildren();
   $("regions").textContent = "";
+  const slow = setTimeout(
+    () => setStatus($("status"), "Server baru bangun, tunggu sebentar. Bisa sampai setengah menit."),
+    SLOW_AFTER_MS,
+  );
   try {
     renderResults(await api("/api/search", { q }));
   } catch (e) {
     setStatus($("status"), e.message, true);
   } finally {
+    clearTimeout(slow);
     $("go").disabled = false;
   }
 }
