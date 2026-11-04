@@ -325,3 +325,5 @@ Outside the page: idea 12 (rank old tables lower).
   bold-label-plus-gloss triplet on every feature page. The owner's own final Jabodetabek post is the reference (gua, active verbs, one
   concrete number, tools named once, links last). `social-posting` skill reworked (workspace commit after this entry); the post
   (v3, gua, "AI") and the carousel copy (`carousel-copy.md`, v2) are rewritten and wait for the owner's OK before any page is built.
+- Same day, after the owner's OK: the carousel is rebuilt from `carousel-copy.md` (neutral voice, no "Tulis di komentar" line on the
+  last page, no labelled triplets, headline plus one sentence per page). The owner posts it; final texts get recorded here.
