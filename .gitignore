@@ -10,3 +10,6 @@ data/**/*
 node_modules/
 tests/e2e/shots/
 .gcloud/
+web/.netlify.env
+web/.netlify-home/
+web/.netlify/
