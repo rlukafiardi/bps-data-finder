@@ -232,3 +232,28 @@ Outside the page: idea 12 (rank old tables lower).
   opens; a link with only `buka` opens the table without searching. The period is not in the link.
 - Browser clipboard needs `clipboard-sanitized-write` as well as `clipboard-write` in the test's permission override. Running the
   browser suite while the catalog refresh was loading the machine crashed Chrome ("Connection closed"): run them one at a time.
+
+## 2026-11-04: BPS Dalam Angka (simdasi) table pages fail to load
+
+- Radikal opened a BPS-supplied Jawa Barat Dalam Angka link in a normal browser: "Gagal Memuat Tabel. Silakan coba beberapa saat lagi.
+  (Error: Error Unknown)". The built Kota Bandung link failed the same way. So the failure is BPS's page, not our kab/kota link
+  format, and the format cannot be verified while it lasts. Plain curl and headless Chrome are no use as a check: curl gets the same
+  error shell for every link, and the anti-bot layer refuses headless Chrome (HTTP 520 from /TSPD/).
+- Decision: change nothing on the page. "Lihat Angkanya" shows the numbers from the API, which does not depend on that page;
+  kab/kota Dalam Angka cards keep having no BPS link. Retry in a browser on another day; if the BPS pages load again, check the
+  built kab/kota link then. Untested: whether dynamic-table (var) links open.
+
+## 2026-11-04: catalog refresh script and the first eval report
+
+- `scripts/refresh.sh [recent|all]`: `pull_catalog --refresh` (recent = current-year publication and press-release lists;
+  all = every page, resumable through `data/raw/catalog/refresh_started`), build the catalog, show added/removed rows by type,
+  run `evals.run_eval --smoke` (fails below Recall@5 0.947 = 0.977 minus 3 points, then the previous catalog is put back), and
+  rebuild `docs/eval-report.html`. First real run: 74,938 -> 74,945 rows (6 publications, 1 press release added, none removed),
+  smoke 0.977. Not in the script yet: the bucket upload and the Cloud Logging export of `search`/`feedback` events (deploy).
+- Eval report: every `run_eval` run saves its questions to `data/processed/eval_results.parquet` and appends one row per method to
+  `evals/history.csv` (58 rows backfilled from the old text outputs, no intervals for those). `evals/report.py` builds the HTML with
+  bootstrap 95% intervals and paired comparisons of each step.
+- Finding: hybrid vs BM25 + region alone is -2.3 points (interval -6.8 to +2.3), and embeddings on top of rewrite + BM25 are
+  +3.4 points (-1.1 to +9.1): both within noise on these 88 questions. Region ranking (+31.8) and the rewrite (+14.8) are clear.
+  The embedding model costs the Cloud Run image size and cold start, so whether to ship it is open until real questions
+  (idea 14 ratings) can settle it. MRR differences were not tested.

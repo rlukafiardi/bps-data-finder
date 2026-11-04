@@ -207,7 +207,13 @@ if (LIVE) {
       buttons: [...n.querySelectorAll(".actions button")].map((b) => b.textContent),
       link: [...n.querySelectorAll("a")].map((a) => [a.textContent, a.target, a.rel, a.href.slice(0, 8)]),
     }));
-    assert.deepEqual(first.buttons, []);
+    assert.deepEqual(first.buttons, ["Salin Kutipan"]);
+    const item = fixture("search_brs.json").results[0];
+    await page.browserContext().overridePermissions(WEB, ["clipboard-read", "clipboard-write", "clipboard-sanitized-write"]);
+    await page.click("#results .result .actions button");
+    await page.waitForFunction(() => /Tersalin/.test(document.querySelector("#results .result .actions button").textContent));
+    const today = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" });
+    assert.equal(await page.evaluate(() => navigator.clipboard.readText()), `"${item.title}", Badan Pusat Statistik, diakses ${today} dari ${item.url}`);
     assert.deepEqual(first.link, [["Buka di BPS", "_blank", "noopener noreferrer", "https://"]]);
     assert.match(await text(page, "#regions"), /Indonesia/);
   });

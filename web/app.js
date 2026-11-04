@@ -139,6 +139,12 @@ function resultCard(item, index) {
     actions.append(show);
   }
   if (item.url) actions.append(bpsLink(item.url, hasValues ? "secondary linkbtn" : "primary linkbtn"));
+  if (item.url && !hasValues) { // a table's citation sits in its panel
+    const cite = el("button", "secondary", "Salin Kutipan");
+    cite.type = "button";
+    cite.addEventListener("click", () => copyText(cite, citation(item)));
+    actions.append(cite);
+  }
   card.append(actions, feedbackRow(item));
   return card;
 }
