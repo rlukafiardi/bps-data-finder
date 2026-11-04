@@ -1,7 +1,7 @@
-Cari data BPS pakai bahasa biasa. Ketik "jumlah penduduk miskin kabupaten garut", dan yang muncul langsung tabel Jawa Barat dengan baris Garut-nya: persentase penduduk miskin 9,39 persen (Maret 2025), jumlahnya 252,56 ribu orang, garis kemiskinan Rp 407.191.
+Tiap provinsi dan kabupaten di BPS punya situsnya sendiri. Satu pertanyaan seperti penduduk miskin di Garut bisa berarti buka situs pusat, situs Jawa Barat, lalu situs Garut, dan angkanya sering susah ditemukan, terutama kalau tersimpan di publikasi.
 
-Namanya Cari Data BPS. Isinya katalog lebih dari 74 ribu tabel dan publikasi BPS, termasuk berita resmi statistik, dari tingkat nasional sampai kabupaten/kota. Pertanyaan dicocokkan ke judul tabel lewat pencarian kata kunci dan embedding, dibantu model bahasa yang mengubah kata sehari-hari jadi istilah BPS. Model itu tidak pernah menulis angka. Semua angka tabel disalin apa adanya dari API BPS, lengkap dengan sumber dan waktu pengambilannya.
+Cari Data BPS menggabungkan pencarian itu. Satu kotak pencarian untuk BPS pusat, provinsi, dan tabel Dalam Angka kabupaten/kota, dengan lebih dari 74 ribu sumber data. Ketik pertanyaan seperti ngobrol, misalnya "jumlah penduduk miskin kabupaten garut", dan hasilnya langsung tabel Jawa Barat dengan baris Garut: 9,39 persen (Maret 2025). Semua angka tabel disalin apa adanya dari API BPS, lengkap dengan sumber dan waktu pengambilannya. Model bahasa hanya membantu mencocokkan pertanyaan, tidak pernah menulis angka.
 
-Satu batasan: model bahasa yang dipakai versi gratis. Kalau sedang sibuk, pencarian jalan tanpa penerjemah istilah, jadi hasilnya bisa kurang pas dan lebih lambat.
+Satu batasan: untuk publikasi, hasilnya baru mengarah ke publikasinya (terbitan 2025 dan 2026). Angka di dalam PDF belum bisa ditampilkan di sini.
 
 Coba di cari-data-bps.netlify.app. Data dari Badan Pusat Statistik; situs ini bukan produk resmi BPS.
