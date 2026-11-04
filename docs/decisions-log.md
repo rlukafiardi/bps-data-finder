@@ -257,3 +257,23 @@ Outside the page: idea 12 (rank old tables lower).
   +3.4 points (-1.1 to +9.1): both within noise on these 88 questions. Region ranking (+31.8) and the rewrite (+14.8) are clear.
   The embedding model costs the Cloud Run image size and cold start, so whether to ship it is open until real questions
   (idea 14 ratings) can settle it. MRR differences were not tested.
+
+## 2026-11-04: first deploy
+
+- GCP project `bps-data-finder` (personal account, billing "My Billing Account 1"; the Rp 20,000 budget alert has no project
+  filter, so it covers this project too). Free tiers of Cloud Run and Artifact Registry are per billing account, shared with
+  the jabodetabek project (pricing pages could not be read in full: unverified). CLI through `./gcloud.sh` (copy of the
+  jabodetabek wrapper, login in `.gcloud/`, refuses project commands unless the account is the personal one).
+- Image: CPU-only torch 2.15.0 (installed before the other locked packages: installing it after let sentence-transformers pull the
+  NVIDIA build), embedding model baked in, `HF_HUB_OFFLINE=1`. 739 MB compressed, built by Cloud Build in 2 min 45 s. Catalog,
+  embeddings and the two region lists in the private bucket `bps-data-finder-data`, mounted read-only at /app/data.
+- Cloud Run `api`: max 1 instance (the BPS spacing is in memory), 2 GiB, 1 vCPU, CPU boost, min 0, service account `api-runtime`
+  (bucket objectViewer, accessor on the two secrets only). Cold start 53 s (mount <1 s, imports + catalog + BM25 ~41 s, model <1 s,
+  embeddings ~12 s); the page's timeout went from 45 s to 90 s. Speed-up candidates: vectors as .npy, BM25 index saved.
+- Limits before going public: the per-client key is the last X-Forwarded-For entry (Cloud Run appends the address it saw; a forged
+  first entry did not lift the limit on the live service), global caps search 120 / value 60 / feedback 200 a minute.
+- Gemini free tier on 2026-11-04 evening: 3.5-flash-lite 14-40 s or 504, other Flash models mostly 503; a 2-minute cooldown after a
+  failure keeps searches fast (without the rewrite, R@5 0.83 instead of 0.977). Re-measure and consider `gemini-3.5-flash`
+  (2 of 5 calls ok at about 2.5 s) once it answers; a model change needs a new eval run.
+- Netlify site `cari-data-bps` was created with Netlify login protection on (`sso_login: true`, every visitor got 401): turned
+  off through the API. Live checks: `scripts/check_live.py` (14 checks) and `tests/e2e/live.mjs` (desktop and phone) pass.

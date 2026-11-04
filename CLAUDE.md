@@ -85,7 +85,11 @@ in the top 5, better than the site search?
 - Next (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): done: risks 1-4, search API,
   values API, region filter (rewrite+hybrid+region R@5 0.93 / MRR 0.70 on 75 q), web page `web/` (local;
   `uv run pytest -q tests`, `npm run test:e2e`). Not registered as a BPS application (Radikal's call). Refresh script and eval report done (`scripts/refresh.sh`,
-  `docs/eval-report.html`). Architecture diagram done (`docs/architecture.py`; update it when a component, store or flow changes). Then deploy (Netlify page + Cloud Run API, on Radikal's go).
+  `docs/eval-report.html`). Architecture diagram done (`docs/architecture.py`; update it when a component, store or flow changes).
+- Live since 2026-11-04: https://cari-data-bps.netlify.app (Netlify `cari-data-bps`, token copied from the jabodetabek
+  project), API https://api-823141605435.asia-southeast2.run.app (Cloud Run `api`, GCP project `bps-data-finder`, personal
+  account via `./gcloud.sh`, max 1 instance, 2 GiB, catalog bucket `bps-data-finder-data` mounted read-only, keys in Secret
+  Manager). Cold start 53 s. Deploy steps in the README; after every deploy `scripts/check_live.py` and `node tests/e2e/live.mjs`.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
