@@ -206,3 +206,16 @@ Outside the page: idea 12 (rank old tables lower).
   1-2 lost their top-1, because their golden answer is an old table ("2008 - 2017" visitors; a regional-revenue archive).
   Old tables are valid answers, so the page keeps the "Data lama" tag and does not mark an old table "Paling cocok".
   Reopen if real feedback (idea 14) shows people skipping old tables.
+
+## 2026-11-04: idea 14, "Hasil ini cocok?" Ya/Tidak per result
+
+- `POST /api/feedback` {q, doc_id, verdict ya|tidak} -> 204 and one stdout log line (`event: feedback`), like searches: no IP.
+  doc_id must be in the catalog (404 otherwise); per-IP limit shared with search (20/min) plus a global 200/min cap.
+  CORS now allows POST and the Content-Type header. The page footer says questions and ratings are logged without identity.
+- Probe found a bug: a body of `NaN` returned 500, because FastAPI's 422 reply echoes the input and nan cannot be encoded.
+  Fixed with a `RequestValidationError` handler that returns only loc + msg; NaN, Infinity, `[1]`, empty body now give 422.
+  With 230 spoofed client IPs: 200 x 204, then 30 x 429 (the global cap works).
+- Logs are the only store: Cloud Run keeps stdout in Cloud Logging for a default retention (30 days, unverified). Export the
+  `feedback` and `search` events to a file before they expire (part of the refresh script) or the labels are lost.
+- Unverified before deploy: the per-IP limit trusts the first X-Forwarded-For entry, which a caller can set; the global
+  cap is what protects the log volume.

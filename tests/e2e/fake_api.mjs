@@ -9,13 +9,29 @@ const fixture = (name) => JSON.parse(readFileSync(join(dir, name), "utf8"));
 const OWN_ORIGIN = "http://localhost:8080";
 
 export function fakeApi(port) {
-  const calls = { search: [], value: [] };
+  const calls = { search: [], value: [], feedback: [] };
   const server = createServer((req, res) => {
     const url = new URL(req.url, "http://x");
     const send = (status, body) => {
       res.writeHead(status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": OWN_ORIGIN });
       res.end(JSON.stringify(body));
     };
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, { "Access-Control-Allow-Origin": OWN_ORIGIN, "Access-Control-Allow-Methods": "GET, POST", "Access-Control-Allow-Headers": "Content-Type" });
+      return res.end();
+    }
+    if (url.pathname === "/api/feedback" && req.method === "POST") {
+      let raw = "";
+      req.on("data", (c) => (raw += c));
+      req.on("end", () => {
+        const body = JSON.parse(raw);
+        calls.feedback.push(body);
+        if (body.doc_id.includes("antre")) return send(429, { detail: "Terlalu banyak permintaan. Coba lagi sebentar." });
+        res.writeHead(204, { "Access-Control-Allow-Origin": OWN_ORIGIN });
+        res.end();
+      });
+      return;
+    }
     if (url.pathname === "/api/search") {
       const q = url.searchParams.get("q");
       calls.search.push(q);

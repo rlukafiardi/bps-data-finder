@@ -7,10 +7,14 @@ import json
 import os
 import time
 from collections import defaultdict, deque
+from typing import Literal
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from src.retrieval.bm25 import BM25
 from src.retrieval.dense import Dense, Hybrid
@@ -23,6 +27,7 @@ from src.values.tables import mark_regions, simdasi_table, static_table, var_tab
 
 CATALOG = "data/processed/catalog.parquet"
 SEARCHES_PER_MINUTE = 20  # per client IP
+FEEDBACK_PER_MINUTE = 200  # all visitors together, so a script cannot flood the logs
 TYPE_LABELS = {
     "var": "Tabel angka",
     "statictable": "Tabel arsip",
@@ -36,13 +41,21 @@ by_id = catalog.set_index("doc_id", drop=False)
 search = RegionRank(Hybrid(BM25(catalog), Dense(catalog)))
 rewriter = Rewriter(serving=True)
 recent = defaultdict(deque)
+feedback_recent = deque()
 
 app = FastAPI(title="BPS Data Finder")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:8080").split(","),
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+def invalid_request(request, exc):
+    # the default reply echoes the input, and a body of NaN cannot be encoded back (500)
+    return JSONResponse({"detail": [{"loc": e["loc"], "msg": e["msg"]} for e in exc.errors()]}, status_code=422)
 
 
 def over_limit(request):
@@ -55,6 +68,16 @@ def over_limit(request):
     if len(calls) >= SEARCHES_PER_MINUTE:
         return True
     calls.append(now)
+    return False
+
+
+def feedback_full():
+    now = time.monotonic()
+    while feedback_recent and feedback_recent[0] < now - 60:
+        feedback_recent.popleft()
+    if len(feedback_recent) >= FEEDBACK_PER_MINUTE:
+        return True
+    feedback_recent.append(now)
     return False
 
 
@@ -90,6 +113,22 @@ def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
         "regions": [{"id": d, "name": domains()[d]["name"]} for d in find_regions(text)],
         "results": [result(r) for r in hits.to_dict("records")],
     }
+
+
+class Feedback(BaseModel):
+    q: str = Field(min_length=2, max_length=200)
+    doc_id: str = Field(max_length=120)
+    verdict: Literal["ya", "tidak"]
+
+
+@app.post("/api/feedback", status_code=204)
+def api_feedback(request: Request, body: Feedback):
+    """Did this result match the question? Logged like searches (no IP): the labels for the next golden set."""
+    if body.doc_id not in by_id.index:
+        raise HTTPException(404, "Hasil tidak ditemukan.")
+    if over_limit(request) or feedback_full():
+        raise HTTPException(429, "Terlalu banyak permintaan. Coba lagi sebentar.")
+    print(json.dumps({"event": "feedback", "q": body.q, "doc_id": body.doc_id, "verdict": body.verdict}), flush=True)
 
 
 @app.get("/api/value")

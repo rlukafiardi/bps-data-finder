@@ -9,7 +9,7 @@ const OLD_AFTER_YEARS = 2; // a table whose newest year is older than this many 
 const YEAR = /(?:19|20)\d{2}/;
 const WIDE = matchMedia("(min-width: 900px)"); // panel sits beside the results instead of over them
 
-const state = { regions: [], opener: null, doc: null };
+const state = { question: "", regions: [], opener: null, doc: null };
 
 function remembered(key, value) {
   try {
@@ -100,6 +100,7 @@ async function search(question) {
 }
 
 function renderResults(data) {
+  state.question = data.question;
   state.regions = data.regions.map((r) => r.id);
   $("examples").hidden = true;
   if (data.results.length === 0) {
@@ -137,8 +138,38 @@ function resultCard(item, index) {
     actions.append(show);
   }
   if (item.url) actions.append(bpsLink(item.url, hasValues ? "secondary linkbtn" : "primary linkbtn"));
-  card.append(actions);
+  card.append(actions, feedbackRow(item));
   return card;
+}
+
+function feedbackRow(item) {
+  const row = el("div", "feedback");
+  const buttons = ["Ya", "Tidak"].map((label) => {
+    const button = el("button", "secondary", label);
+    button.type = "button";
+    button.addEventListener("click", () => sendFeedback(item, label.toLowerCase(), row));
+    return button;
+  });
+  row.append(el("span", "small", "Hasil ini cocok?"), ...buttons);
+  return row;
+}
+
+async function sendFeedback(item, verdict, row) {
+  const buttons = row.querySelectorAll("button");
+  buttons.forEach((b) => (b.disabled = true));
+  try {
+    const response = await fetch(new URL("/api/feedback", API), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ q: state.question, doc_id: item.doc_id, verdict }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error(String(response.status));
+    row.replaceChildren(el("span", "small", "Makasih, masukannya tercatat."));
+  } catch {
+    buttons.forEach((b) => (b.disabled = false));
+    row.querySelector("span").textContent = "Belum terkirim. Coba lagi?";
+  }
 }
 
 function bpsLink(url, className) {

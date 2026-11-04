@@ -202,7 +202,7 @@ if (LIVE) {
     await search(page, "inflasi indonesia oktober 2026");
     await resultsReady(page);
     const first = await page.$eval("#results .result", (n) => ({
-      buttons: [...n.querySelectorAll("button")].map((b) => b.textContent),
+      buttons: [...n.querySelectorAll(".actions button")].map((b) => b.textContent),
       link: [...n.querySelectorAll("a")].map((a) => [a.textContent, a.target, a.rel, a.href.slice(0, 8)]),
     }));
     assert.deepEqual(first.buttons, []);
@@ -233,6 +233,29 @@ if (LIVE) {
     assert.match(await text(page, "#status"), /baru bangun/);
     await page.waitForFunction(() => /hasil paling cocok/.test(document.getElementById("status").textContent));
     assert.doesNotMatch(await text(page, "#status"), /bangun/);
+    await noBanned(page);
+  });
+
+  await step("feedback: Ya and Tidak send the question and result once, a refusal can be retried", async () => {
+    const { page } = await open();
+    await page.click("#welcome-start");
+    await search(page, QUESTION);
+    await resultsReady(page);
+    const ids = fixture("search.json").results.map((r) => r.doc_id);
+    const before = fake.calls.feedback.length;
+    await page.click("#results .result:nth-child(1) .feedback button:first-of-type");
+    await page.waitForFunction(() => /tercatat/.test(document.querySelector("#results .result .feedback").textContent));
+    assert.deepEqual(fake.calls.feedback.slice(before), [{ q: QUESTION, doc_id: ids[0], verdict: "ya" }]);
+    assert.equal((await page.$$("#results .result:nth-child(1) .feedback button")).length, 0, "no second vote on the same result");
+    await page.click("#results .result:nth-child(2) .feedback button:last-of-type");
+    await page.waitForFunction((n) => document.querySelectorAll("#results .result")[1].querySelector(".feedback").textContent.includes("tercatat"), {}, 0);
+    assert.equal(fake.calls.feedback.at(-1).verdict, "tidak");
+
+    await search(page, "antre"); // result 2 of this search makes the fake API refuse feedback
+    await resultsReady(page);
+    await page.click("#results .result:nth-child(2) .feedback button:first-of-type");
+    await page.waitForFunction(() => /Belum terkirim/.test(document.querySelectorAll("#results .result")[1].querySelector(".feedback").textContent));
+    assert.equal(await page.$$eval("#results .result:nth-child(2) .feedback button", (b) => b.filter((x) => !x.disabled).length), 2, "buttons come back");
     await noBanned(page);
   });
 
