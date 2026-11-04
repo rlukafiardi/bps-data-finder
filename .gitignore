@@ -9,3 +9,4 @@ data/**/*
 .pytest_cache/
 node_modules/
 tests/e2e/shots/
+.gcloud/
