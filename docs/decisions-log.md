@@ -293,3 +293,15 @@ Outside the page: idea 12 (rank old tables lower).
   Tabel (Error Unknown)" in Radikal's browser, while a Bali dynamic table opens. So bps.go.id's Dalam Angka (statistics-table/3)
   pages fail in general, BPS-supplied links included; the kab/kota link format stays unverified. Nothing changed on the page.
   Recheck in a browser on 2026-11-05; if they still fail, add a short note on Dalam Angka results that the BPS page may not open.
+
+## 2026-11-04: dynamic-table column names; registry cleanup
+
+- Radikal: the DI Yogyakarta hotel table (var 3400:75) showed columns "Akomodasi  Tahun", "Kamar Tahun" and "Satuan: Tidak Ada
+  Satuan". Cause: the sub-period id 0 ("Tahun", yearly) came as a number and the code only dropped the string "0"; labels kept
+  BPS's stray spaces. Fixed (`column_label`, unit hidden when it says there is none), likely affecting most yearly tables; live in
+  revision api-00003 (image eeb42ab).
+- The same table's numbers are odd (DIY 222 hotels, 21 rooms; Sleman 87 hotels, 9 rooms) but equal BPS's raw datacontent, so they
+  stay as given. Guess, unverified: values from 1,000 up were typed with the Indonesian thousands dot and cut by decimal 0.
+- The cancelled first build had pushed a 3.5 GB image (b013b0c, with the NVIDIA packages); it and dddcdc6 were deleted after checking
+  the service runs eeb42ab. One image left (739 MB). Older revisions point at deleted images: roll back by redeploying, not by
+  shifting traffic.
