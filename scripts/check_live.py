@@ -1,4 +1,4 @@
-"""Check the deployed API and site after every deploy: health, refusals, CORS, the per-client limit with a forged
+"""Check the deployed API and site after every deploy: health, refusals, CORS, "Buka di BPS" links, the per-client limit with a forged
 X-Forwarded-For, and the site's security headers and API address. Exit 1 on any failure.
 
     uv run python scripts/check_live.py https://api-....run.app [https://cari-data-bps.netlify.app]
@@ -6,7 +6,10 @@ X-Forwarded-For, and the site's security headers and API address. Exit 1 on any 
 The limit check sends 25 searches, so run it at most once a minute.
 """
 
+import html
+import re
 import sys
+import time
 
 import httpx
 
@@ -34,8 +37,25 @@ def api_checks(api, site):
         check("CORS allows the site", allowed.headers.get("access-control-allow-origin") == site, str(allowed.headers.get("access-control-allow-origin")))
     other = c.options("/api/search", headers={"Origin": "https://example.com", "Access-Control-Request-Method": "GET"})
     check("CORS refuses another origin", "access-control-allow-origin" not in other.headers)
+    link_checks(c)
     codes = [c.get("/api/search", params={"q": "inflasi riau"}, headers={"X-Forwarded-For": f"203.0.113.{i}"}).status_code for i in range(25)]
     check("a forged X-Forwarded-For does not lift the per-client limit", 429 in codes, f"codes {sorted(set(codes))}")
+
+
+def link_checks(c):
+    """"Buka di BPS" of press releases and publications opens the page of that title. Table pages fill in with
+    JavaScript after loading, so a plain request cannot tell whether they work: those need a browser."""
+    found = []
+    for q in ("perkembangan pariwisata bali", "publikasi statistik indonesia 2026"):
+        found += [r for r in c.get("/api/search", params={"q": q}).json()["results"] if r["url"]]
+    links = [r for kind in ("pressrelease", "publication") for r in [r for r in found if r["type"] == kind][:2]]
+    check("search finds press releases and publications to check", len(links) == 4, str([r["type"] for r in links]))
+    bps = httpx.Client(timeout=30, headers={"User-Agent": "bps-data-finder/0.1 (link check)"})
+    for item in links:
+        time.sleep(3)  # bps.go.id answers 429 to fast visitors
+        r = bps.get(item["url"])
+        title = html.unescape((re.search(r"<title>([^<]*)</title>", r.text) or [None, ""])[1])
+        check(f"{item['type']} link opens its page", r.status_code == 200 and item["title"][:40].lower() in title.lower(), f"{r.status_code} {item['url']}")
 
 
 def site_checks(site, api):

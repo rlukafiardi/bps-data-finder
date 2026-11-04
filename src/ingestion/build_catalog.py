@@ -110,16 +110,23 @@ def sites():
 def built_link(row, site):
     """Link for rows without one from BPS search, or None.
 
-    Publication and press-release links were opened in Chrome (6 of 6 showed their title). A Dalam Angka
-    link uses the token form of the 5,271 national and province links BPS gave us (id#3#domain). For
-    kab/kota it is unchecked (BPS's firewall challenges headless Chrome there), and the 3 dynamic tables
-    search never listed fail to load on bps.go.id, so those rows get no link."""
-    if row["type"] in ("publication", "pressrelease"):
-        return f"{site}/id/{row['type']}/{str(row['date'])[:10].replace('-', '/')}/{row['source_id']}"
+    Publication links open the right page. Press-release links need a slug after the id since early November
+    2026 (without it bps.go.id answers 404; any slug works, the real one is used). A Dalam Angka link uses the
+    token form of the 5,271 national and province links BPS gave us (id#3#domain). For kab/kota it is
+    unchecked (BPS's firewall challenges headless Chrome there), and the 3 dynamic tables search never listed
+    fail to load on bps.go.id, so those rows get no link."""
+    date = str(row["date"])[:10].replace("-", "/")
+    if row["type"] == "publication":
+        return f"{site}/id/publication/{date}/{row['source_id']}"
+    if row["type"] == "pressrelease":
+        return f"{site}/id/pressrelease/{date}/{row['source_id']}/{slug(row['title'])}.html"
     if row["type"] == "simdasi" and row["domain"].endswith("00"):
-        slug = "-".join(re.findall(r"[a-z0-9]+", row["title"].lower()))[:80]
-        return f"{site}/id/statistics-table/3/{b64(row['source_id'] + '#3#' + row['domain'])}/{slug}.html"
+        return f"{site}/id/statistics-table/3/{b64(row['source_id'] + '#3#' + row['domain'])}/{slug(row['title'])}.html"
     return None
+
+
+def slug(title):
+    return "-".join(re.findall(r"[a-z0-9]+", title.lower()))[:80]
 
 
 def b64(text):

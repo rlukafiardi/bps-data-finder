@@ -277,3 +277,13 @@ Outside the page: idea 12 (rank old tables lower).
   (2 of 5 calls ok at about 2.5 s) once it answers; a model change needs a new eval run.
 - Netlify site `cari-data-bps` was created with Netlify login protection on (`sso_login: true`, every visitor got 401): turned
   off through the API. Live checks: `scripts/check_live.py` (14 checks) and `tests/e2e/live.mjs` (desktop and phone) pass.
+
+## 2026-11-04: "Buka di BPS" for press releases was a 404
+
+- Radikal: "pariwisata bali" -> Buka di BPS -> "404 - Page Not Found". Cause: bps.go.id press-release addresses now need a slug
+  after the id (`/id/pressrelease/2026/08/03/169528/<slug>.html`); without it HTTP 404, with any slug the right page (the real slug
+  is used). The format without a slug worked on 2026-11-03 (6 of 6), so BPS changed it. All 5,450 press-release links were
+  rebuilt (no other column changed); 6 random ones across regions open the page of their title. Publications still work
+  without a slug. `check_live.py` now opens 2 press-release and 2 publication links from live searches after every deploy.
+- Tables: BPS's own links from its search answer 200 with the right page title, so the address is known to bps.go.id; whether
+  the table then fills in needs a browser (plain requests cannot tell, headless Chrome is challenged on province sites).
