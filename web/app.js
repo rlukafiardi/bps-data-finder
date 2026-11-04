@@ -2,9 +2,9 @@
 
 const API = window.API_BASE;
 const $ = (id) => document.getElementById(id);
-const TIMEOUT_MS = 45000; // a value can wait up to 15 s for a free slot with BPS, then BPS itself answers
+const TIMEOUT_MS = 90000; // a sleeping server took 53 s to start on Cloud Run (2026-11-04), and a value can then wait 15 s for a BPS slot
 
-const SLOW_AFTER_MS = 5000; // a server that slept starts in 15-30 s (estimate): say so instead of a bare "Mencari..."
+const SLOW_AFTER_MS = 5000; // a server that slept takes about a minute to start: say so instead of a bare "Mencari..."
 const OLD_AFTER_YEARS = 2; // a table whose newest year is older than this many years ago gets a "Data lama" tag
 const YEAR = /(?:19|20)\d{2}/;
 const CSV_SEPARATOR = ";"; // Excel with an Indonesian locale splits on ";" because "," is its decimal mark
@@ -87,7 +87,7 @@ async function search(question) {
   $("results").replaceChildren();
   $("regions").textContent = "";
   const slow = setTimeout(
-    () => setStatus($("status"), "Server baru bangun, tunggu sebentar. Bisa sampai setengah menit."),
+    () => setStatus($("status"), "Server baru bangun, tunggu sebentar. Bisa sampai satu menit."),
     SLOW_AFTER_MS,
   );
   try {

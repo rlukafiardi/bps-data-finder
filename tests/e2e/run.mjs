@@ -237,7 +237,7 @@ if (LIVE) {
 
     await page.$eval("#results", (n) => n.replaceChildren());
     await search(page, "lambat");
-    await page.waitForFunction(() => /setengah menit/.test(document.getElementById("status").textContent), { timeout: 5800 });
+    await page.waitForFunction(() => /satu menit/.test(document.getElementById("status").textContent), { timeout: 5800 });
     assert.match(await text(page, "#status"), /baru bangun/);
     await page.waitForFunction(() => /hasil paling cocok/.test(document.getElementById("status").textContent));
     assert.doesNotMatch(await text(page, "#status"), /bangun/);
