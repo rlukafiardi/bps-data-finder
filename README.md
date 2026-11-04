@@ -12,8 +12,8 @@ The diagram's source is `docs/architecture.py`; `docs/architecture.excalidraw` o
 
 ## Status
 
-Built and tested locally: search API (FastAPI), Bahasa-Indonesia-first web page, catalog refresh script and an
-evaluation report. Not deployed yet. See `CLAUDE.md` for decisions and next steps, and `docs/eval-report.html`
+Live at https://cari-data-bps.netlify.app (page on Netlify) with the API on Cloud Run (`asia-southeast2`). Built: search
+API (FastAPI), Bahasa-Indonesia-first web page, catalog refresh script and an evaluation report. See `CLAUDE.md` for decisions and next steps, and `docs/eval-report.html`
 for how well the search finds the right source (Recall@5 0.977 on 88 generated questions, against 0.19 for
 bps.go.id's own search; no real user questions yet).
 
@@ -37,6 +37,13 @@ uv run uvicorn app.main:app --port 8000        # API: /api/search?q=..., /api/va
 uv run pytest -q tests
 npm install && npm run test:e2e                # page in real Chrome against a fake API
 npm run serve -- 8080 http://localhost:8000    # the page on http://localhost:8080
+
+# deploy (personal Google account through ./gcloud.sh; Netlify token in web/.netlify.env)
+scripts/publish_data.sh                        # catalog files -> private bucket (applies on the next API start)
+SITE_ORIGIN=https://cari-data-bps.netlify.app scripts/deploy_api.sh
+API_ORIGIN=https://api-823141605435.asia-southeast2.run.app scripts/deploy_site.sh
+uv run python scripts/check_live.py https://api-823141605435.asia-southeast2.run.app https://cari-data-bps.netlify.app
+node tests/e2e/live.mjs                        # the live page in Chrome
 ```
 
 This service uses the Badan Pusat Statistik (BPS) API.

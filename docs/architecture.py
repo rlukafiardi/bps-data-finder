@@ -15,13 +15,13 @@ from excalidraw_lib import Diagram  # noqa: E402
 
 d = Diagram(seed=21)
 d.title('BPS Data Finder · architecture', 'A question finds the right BPS source; table numbers come live from BPS, never from a model')
-d.lane(20, 0, 1500, 520, 'SERVING · every visit (runs locally; Netlify + Cloud Run planned)')
+d.lane(20, 0, 1500, 520, 'SERVING · every visit (Netlify page · Cloud Run API, asia-southeast2)')
 d.lane(20, 560, 1500, 290, 'REFRESH · monthly, on this Mac')
 
 # Serving lane
 d.person(58, 232, 'Visitor')
 d.box(250, 235, 190, 70, 'code', 'WEB PAGE', 'static · Bahasa Indonesia')
-d.box(520, 235, 190, 70, 'code', 'API', 'FastAPI · rate limits')
+d.box(520, 235, 190, 70, 'code', 'API', 'Cloud Run · 1 instance · caps')
 d.box(790, 30, 200, 60, 'ai', 'GEMINI', 'rewrite · region (free tier)')
 d.box(790, 120, 200, 60, 'code', 'HYBRID SEARCH', 'BM25 + e5-small · RRF')
 d.box(1060, 120, 200, 60, 'code', 'RANK', 'region · period · top 5')
@@ -59,7 +59,7 @@ d.arrow([(482, 790), (548, 790)])
 d.arrow([(752, 790), (808, 790)])
 
 # The catalog files, shared by both lanes
-d.cylinder(1560, 20, 240, 830, 'store', title='Catalog files')
+d.cylinder(1560, 20, 240, 830, 'store', title='Catalog bucket')
 d.box(1580, 330, 200, 56, 'plain', 'catalog.parquet', '74,945 sources · 5 types')
 d.box(1580, 420, 200, 56, 'plain', 'embeddings.parquet', 'e5-small vectors')
 
