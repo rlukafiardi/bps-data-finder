@@ -338,6 +338,25 @@ if (LIVE) {
     assert.equal(rows[2], fixture("value_var.json").rows[1].label + ";" + fixture("value_var.json").rows[1].values[0], "other rows stay as given");
   });
 
+  await step("Dalam Angka results have no BPS link while BPS's pages fail; other tables keep theirs", async () => {
+    const { page } = await open();
+    await page.click("#welcome-start");
+    await search(page, QUESTION);
+    await resultsReady(page);
+    const kinds = fixture("search.json").results.map((r) => r.type);
+    const cards = await page.$$eval("#results .result", (n) => n.map((c) => ({ links: c.querySelectorAll(".actions a").length, note: /sedang bermasalah/.test(c.textContent) })));
+    kinds.forEach((kind, i) => assert.deepEqual(cards[i], kind === "simdasi" ? { links: 0, note: true } : { links: 1, note: false }, `card ${i + 1} (${kind})`));
+    const openCard = async (nth) => {
+      await page.click(`#results .result:nth-child(${nth}) button.primary`);
+      await valueReady(page);
+      return { link: !(await hidden(page, "#panel-link")), note: !(await hidden(page, "#panel-down")) };
+    };
+    assert.deepEqual(await openCard(kinds.indexOf("simdasi") + 1), { link: false, note: true });
+    await page.click("#panel-close");
+    assert.deepEqual(await openCard(kinds.indexOf("var") + 1), { link: true, note: false });
+    await noBanned(page);
+  });
+
   await step("a result without a BPS link shows the numbers but no link", async () => {
     const { page } = await open();
     await page.click("#welcome-start");

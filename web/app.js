@@ -5,6 +5,10 @@ const $ = (id) => document.getElementById(id);
 const TIMEOUT_MS = 90000; // a sleeping server took 53 s to start on Cloud Run (2026-11-04), and a value can then wait 15 s for a BPS slot
 
 const SLOW_AFTER_MS = 5000; // a server that slept takes about a minute to start: say so instead of a bare "Mencari..."
+// bps.go.id's Dalam Angka table pages show "Gagal Memuat Tabel" (2026-11-04), also for links BPS itself supplied: no
+// "Buka di BPS" for them until the pages work again (recheck in a browser, then empty this set)
+const BPS_PAGE_DOWN = new Set(["simdasi"]);
+const BPS_PAGE_DOWN_NOTE = "Halaman BPS untuk tabel ini sedang bermasalah. Angkanya tetap tampil di sini.";
 const OLD_AFTER_YEARS = 2; // a table whose newest year is older than this many years ago gets a "Data lama" tag
 const YEAR = /(?:19|20)\d{2}/;
 const CSV_SEPARATOR = ";"; // Excel with an Indonesian locale splits on ";" because "," is its decimal mark
@@ -138,14 +142,15 @@ function resultCard(item, index) {
     show.addEventListener("click", () => openPanel(item, show));
     actions.append(show);
   }
-  if (item.url) actions.append(bpsLink(item.url, hasValues ? "secondary linkbtn" : "primary linkbtn"));
+  const pageDown = Boolean(item.url) && BPS_PAGE_DOWN.has(item.type);
+  if (item.url && !pageDown) actions.append(bpsLink(item.url, hasValues ? "secondary linkbtn" : "primary linkbtn"));
   if (item.url && !hasValues) { // a table's citation sits in its panel
     const cite = el("button", "secondary", "Salin Kutipan");
     cite.type = "button";
     cite.addEventListener("click", () => copyText(cite, citation(item)));
     actions.append(cite);
   }
-  card.append(actions, feedbackRow(item));
+  card.append(actions, ...(pageDown ? [el("p", "small", BPS_PAGE_DOWN_NOTE)] : []), feedbackRow(item));
   return card;
 }
 
@@ -189,12 +194,19 @@ function bpsLink(url, className) {
 
 /* value panel */
 
+function showBpsLink(url, type) {
+  const down = Boolean(url) && BPS_PAGE_DOWN.has(type);
+  $("panel-link").hidden = !url || down;
+  if (url) $("panel-link").href = url;
+  $("panel-down").hidden = !down;
+  $("panel-down").textContent = down ? BPS_PAGE_DOWN_NOTE : "";
+}
+
 function openPanel(item, opener) {
   state.opener = opener;
   state.doc = item;
   $("panel-title").textContent = item.title || "Memuat tabel...";
-  $("panel-link").hidden = !item.url;
-  if (item.url) $("panel-link").href = item.url;
+  showBpsLink(item.url, item.type);
   $("backdrop").hidden = false;
   $("panel").setAttribute("aria-modal", String(!WIDE.matches));
   $("panel").hidden = false;
@@ -264,8 +276,7 @@ function renderValue(data) {
   setStatus($("panel-status"), "");
   if (!state.doc.title) { // opened from a shared link: no search result gave a title or a link
     $("panel-title").textContent = data.title;
-    $("panel-link").hidden = !data.url;
-    if (data.url) $("panel-link").href = data.url;
+    showBpsLink(data.url, data.type);
   }
   $("panel-tools").hidden = false;
   $("panel-cite").hidden = !data.url; // BPS asks for a credit with title, access date and direct link
