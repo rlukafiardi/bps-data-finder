@@ -13,3 +13,4 @@ tests/e2e/shots/
 web/.netlify.env
 web/.netlify-home/
 web/.netlify/
+web/dist/
