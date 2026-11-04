@@ -4,6 +4,12 @@ Ask for a statistic in plain Bahasa Indonesia or English and get the BPS table, 
 that matches (dynamic table, static table, Dalam Angka table, publication, press release). For tables the page
 also shows the numbers, copied verbatim from the BPS API: no language model ever writes a number.
 
+## How it works
+
+![Architecture](docs/architecture.svg)
+
+The diagram's source is `docs/architecture.py`; `docs/architecture.excalidraw` opens in excalidraw.com.
+
 ## Status
 
 Built and tested locally: search API (FastAPI), Bahasa-Indonesia-first web page, catalog refresh script and an
