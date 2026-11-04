@@ -287,3 +287,5 @@ Outside the page: idea 12 (rank old tables lower).
   without a slug. `check_live.py` now opens 2 press-release and 2 publication links from live searches after every deploy.
 - Tables: BPS's own links from its search answer 200 with the right page title, so the address is known to bps.go.id; whether
   the table then fills in needs a browser (plain requests cannot tell, headless Chrome is challenged on province sites).
+- Later the same evening Radikal opened the Bali dynamic-table link (`statistics-table/2/MTI5IzI=/...`) in a browser: it works.
+  So the table links are right, and the earlier "Gagal Memuat Tabel" was bps.go.id failing for a while.
