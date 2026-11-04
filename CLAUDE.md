@@ -90,6 +90,6 @@ in the top 5, better than the site search?
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
   region filter + kab/kota name stripping] (7) fetch values verbatim (var data, SIMDASI 25, statictable view)
-  [done: `src/values/`, `/api/value`] (8) web page [done, local; MCP server dropped] (9) period matching (month / quarter /
+  [done: `src/values/`, `/api/value`] (8) web page [done, local; redesigned answer-first 2026-11-04; MCP server dropped] (9) period matching (month / quarter /
   year in the question vs title) [done] + BM25 title weight 5 [done] (10) BPS glosarium endpoint as acronym list [open] (11) page numbers in publications: read the 80
-  yearbook PDFs (1.1 GB; all 3,649 are 36 GB) [open, see decisions log]
+  yearbook PDFs (1.1 GB; all 3,649 are 36 GB) [parked 2026-11-04: pilot works on one book, value unmeasured, see decisions log] (12) rank tables with an old newest year lower when the question names no year [open]

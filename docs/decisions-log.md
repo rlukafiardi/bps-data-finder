@@ -127,3 +127,55 @@ the work are in `CLAUDE.md`.
   Page-level search needs the PDFs read: all 3,649 PDFs of 2025-2026 are 36 GB (median 7.6 MB, 479 over 20 MB),
   too much at the BPS rate limit; the 80 yearbooks (Dalam Angka, Statistik Indonesia) are 1.1 GB. PDF links
   carry a token, whether they are text or scans is unchecked, and bulk downloads need a look at the terms.
+
+## 2026-11-04: page numbers inside publications, pilot on one yearbook (parked)
+
+- Terms re-read: the API terms PDF (Dec 2022, scanned images, read by eye) says nothing about downloading PDFs;
+  section 12 sends content use to the website terms. The website terms (`https://www.bps.go.id/en/term-of-use`,
+  section 13, read through a fetch summary with verbatim quotes) allow copying, distributing, extraction and
+  modification, commercial or not, with credit (title, access date, direct link). No ban on bulk download found;
+  sections 14-15 only reserve monitoring and blocking. Old `S&K.pdf` link is a 404.
+- PDF link tokens expire: a link stored in the catalog returned "Invalid Token"; a fresh one comes from one
+  `view/.../model/publication/.../id/` call (`data.pdf`). The download server ignores Range requests and ran at
+  about 50 KB/s (12.8 MB in ~4 min).
+- Pilot on Statistik Indonesia 2026 (920 pages, text layer, 36 near-empty pages): the contents pages list every
+  table with its printed page. Parsed 406 tables (codes `x.y.z` and `x.y`; section headings dropped because they
+  never get a page); printed page + 44 = PDF page, and the table title is on that page for 404 of 406. Table-title
+  BM25 found the right page for the test questions ("garis kemiskinan" hal. 331, "kejahatan menurut polda" hal.
+  302, "inflasi bulanan" hal. 635); "angka harapan hidup" has no table in that book.
+- Values: `pymupdf` `find_tables().extract()` scrambles separators ("71896 ," for 718,96). Filling each cell with the
+  words inside its box keeps the text exact ("718,96", "1.110,92"). Checked on all 406 tables: 55,789 numbers
+  inside the table box, 0 lost and 0 duplicated (mutation check: a removed or swapped cell is caught). Not
+  covered: wrong column header, multi-level headers (came out partly blank), tables that continue on a next page,
+  and a footer URL that can land in a cell (filtered). `pymupdf` is 4x faster than `pypdf` (17 s vs 74 s).
+- Catalog count: 157 yearbook-type publications, 153 province + 4 national, no kab/kota (publication lists were
+  only pulled for national and provinces). Province and national yearbooks mostly compile tables already in
+  var / SIMDASI (not measured). The known gap (kab/kota tables absent from SIMDASI) needs ~1,000 more PDFs.
+- Decision: parked. Cost (new result type, per-layout parser, hours of polite downloading, "read from PDF,
+  unchecked" labels) against an unmeasured gain. Revisit when the logged real queries show how many end with only
+  a publication link and no table; first slice then = 4-5 kab/kota books. Pilot scripts were in the scratchpad
+  and are not in the repo.
+
+## 2026-11-04: web page redesign, answer-first (`web/`)
+
+- Looked at the page as a first-time visitor (phone, light and dark, desktop) before changing it. Found: the how-to
+  card sat above the search box; the panel opened on the oldest years, so on a phone a 2002-2016 table showed
+  2002-2004; the asked region's value was not pulled out; an old archive table ranked first without any sign it was
+  old; the desktop panel dimmed the list it belongs to. Radikal chose "answer-first" over a visual refresh or
+  guided steps (steps would drop the free-text rewrite and region matching).
+- Changes: headline + search first with a short "Cara pakai" card below (first visit, remembered, reopened by ?);
+  "Paling cocok" tag on the first result unless it is old; "Data lama" tag when the newest year is more than 2
+  years back (`OLD_AFTER_YEARS`), with "Tahun terakhir di judul: N" so the source of the year is clear; answer
+  strip at the top of the panel: the asked region's row, last three columns with a value, cells copied as given;
+  a table with years across opens on its newest year (only if the years ascend); desktop: panel beside the list
+  (no dimming layer, `aria-modal` false), phone keeps the bottom sheet.
+- API: results carry `latest_year` (`src/retrieval/period.latest_year`: newest year in the title, or the years BPS
+  has a Dalam Angka table for). 98% of archive tables have a year in the title, only 2% of dynamic tables, so the
+  tag mostly covers archive tables. A title year that is a base year (not a period) could in rare cases show a
+  wrong "Tahun terakhir"; the card says where the year comes from.
+- Tests: 11 browser steps pass. Mutation checks: no scroll to newest, answer strip taking the first three
+  columns, no old tag, desktop without the side layout each fail a step. The first answer-strip assertion used a
+  6-column fixture and could not tell first from last three columns; it now also checks the 15-column archive
+  table.
+- Open: kab/kota Dalam Angka link format still unverified; (12) rank tables with an old newest year lower when the
+  question names no year (Garut question puts a 2002-2016 table first).

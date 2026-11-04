@@ -13,7 +13,7 @@ const WEB = "http://localhost:8080";
 const API = LIVE ? "http://localhost:8000" : "http://localhost:8001";
 const SHOTS = "tests/e2e/shots";
 const QUESTION = "jumlah penduduk miskin kabupaten garut";
-const BANNED = /\b(anda|saya|silakan|mohon|terlebih dahulu|diminta oleh|dapat|median|interval|persentil|percentile|variance|varians|model)\b/i;
+const BANNED = /\b(anda|saya|kami|kita|aku|kamu|\w{3,}mu|silakan|mohon|terlebih dahulu|diminta oleh|dapat|median|interval|persentil|percentile|variance|varians|model)\b/i;
 const fixture = (name) => JSON.parse(readFileSync(`tests/e2e/fixtures/${name}`, "utf8"));
 
 mkdirSync(SHOTS, { recursive: true });
@@ -61,7 +61,7 @@ const valueReady = (page) => page.waitForFunction(() => !document.getElementById
 const uiText = (page) =>  // the page's own words; BPS titles, notes and table cells are data
   page.evaluate(() => {
     const clone = document.body.cloneNode(true);
-    clone.querySelectorAll(".result h3, #table-wrap, #panel-title, #panel-note, #panel-source, script").forEach((n) => n.remove());
+    clone.querySelectorAll(".result h3, #table-wrap, .answer-row, #panel-title, #panel-note, #panel-source, script").forEach((n) => n.remove());
     return clone.textContent.replace(/\s+/g, " ");
   });
 const noHorizontalScroll = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
@@ -85,7 +85,15 @@ if (LIVE) {
   await step("first visit: welcome card, remembered, reopened by ?", async () => {
     const { page } = await open();
     assert.equal(await hidden(page, "#welcome"), false);
-    assert.equal(await text(page, "#welcome-title"), "Mau cari data BPS apa?");
+    assert.equal(await text(page, "#title"), "Mau cari data BPS apa?");
+    assert.equal(await text(page, "#welcome-title"), "Cara pakai");
+    // only tables show numbers: publications and press releases are links, so no page text may promise numbers for them
+    const promise = await page.evaluate(() => [document.querySelector(".lead").textContent, document.querySelector("meta[name=description]").content, document.getElementById("welcome").textContent].join(" "));
+    assert.doesNotMatch(promise, /lengkap dengan angka/i);
+    assert.match(await text(page, ".lead"), /Angka tabel langsung tampil/);
+    assert.match(await text(page, "#welcome"), /Untuk tabel, tekan Lihat Angkanya\. Publikasi dan berita resmi dibuka di BPS/);
+    const order = await page.evaluate(() => document.getElementById("search").compareDocumentPosition(document.getElementById("welcome")));
+    assert.ok(order & 4, "the search box comes before the how-to card");
     await page.click("#welcome-start");
     assert.equal(await hidden(page, "#welcome"), true);
     assert.equal(await page.evaluate(() => document.activeElement.id), "q");
@@ -114,6 +122,14 @@ if (LIVE) {
     const shown = await page.$$eval("#table-wrap tr.hit > *", (cells) => cells.map((c) => c.textContent));
     assert.deepEqual(shown, [recorded.label, ...recorded.values.map((v) => v ?? "–")]);
     assert.equal(await hidden(page, "#legend"), false);
+    const columns = fixture("value_simdasi.json").columns;
+    const last3 = recorded.values.map((v, i) => [columns[i], v]).filter(([, v]) => v !== null).slice(-3);
+    const answer = await page.$$eval("#answer .answer-row", (rows) => rows.map((r) => ({
+      label: r.querySelector("h3").textContent,
+      pairs: [...r.querySelectorAll("dl > div")].map((d) => [d.querySelector("dt").textContent, d.querySelector("dd").textContent]),
+    })));
+    assert.deepEqual(answer, [{ label: recorded.label, pairs: last3 }], "answer strip must copy the recorded cells");
+    assert.match(await text(page, "#answer"), /Tiga kolom terakhir/);
     assert.match(await text(page, "#panel-fetched"), /Angka diambil dari BPS pada .+ WIB\./);
     assert.ok((await page.$$("#period option")).length >= 2);
     await noBanned(page);
@@ -138,6 +154,27 @@ if (LIVE) {
     assert.deepEqual(seen.pageErrors, []);
   });
 
+  await step("old tables are tagged, the best match is marked, the year comes from the title", async () => {
+    const { page } = await open();
+    await page.click("#welcome-start");
+    await search(page, QUESTION);
+    await resultsReady(page);
+    const tags = await page.$$eval("#results .result", (cards) => cards.map((c) => ({
+      tags: [...c.querySelectorAll(".tag")].map((t) => t.textContent),
+      facts: c.querySelector(".small")?.textContent ?? "",
+    })));
+    assert.deepEqual(tags[0].tags, ["Data lama"], "2002-2016 archive table");
+    assert.match(tags[0].facts, /Tahun terakhir di judul: 2016/);
+    assert.deepEqual(tags[1].tags, [], "Dalam Angka 2017-2025 is current");
+    assert.match(tags[1].facts, /Tahun tersedia: 2017-2025/);
+    assert.equal(tags.flatMap((t) => t.tags).filter((t) => t === "Paling cocok").length, 0, "an old table is not called the best match");
+    await search(page, "inflasi indonesia oktober 2026");
+    await page.waitForFunction(() => document.querySelector("#results .result .badge")?.textContent === "Berita Resmi");
+    assert.deepEqual(await page.$$eval("#results .result:first-child .tag", (n) => n.map((t) => t.textContent)), ["Paling cocok"]);
+    assert.equal(await page.$$eval("#results .tag.best", (n) => n.length), 1, "only the first result");
+    await noBanned(page);
+  });
+
   await step("dynamic and archive tables highlight the asked region", async () => {
     const { page } = await open();
     await page.click("#welcome-start");
@@ -150,6 +187,13 @@ if (LIVE) {
     await page.click("#results .result:nth-child(1) button.primary");  // Tabel arsip
     await valueReady(page);
     assert.equal(await text(page, "#table-wrap tr.hit th"), "5. Garut");
+    const archive = fixture("value_static.json");  // 15 columns: the strip must show the newest three, not the first
+    const garut = archive.rows.find((r) => r.highlight);
+    const expected = garut.values.map((v, i) => [archive.columns[i], v]).filter(([, v]) => v !== null).slice(-3);
+    assert.deepEqual(
+      await page.$$eval("#answer dl > div", (d) => d.map((x) => [x.querySelector("dt").textContent, x.querySelector("dd").textContent])),
+      expected,
+    );
   });
 
   await step("press releases are links only", async () => {
@@ -164,6 +208,15 @@ if (LIVE) {
     assert.deepEqual(first.buttons, []);
     assert.deepEqual(first.link, [["Buka di BPS", "_blank", "noopener noreferrer", "https://"]]);
     assert.match(await text(page, "#regions"), /Indonesia/);
+  });
+
+  await step("a question without a region says national data was searched", async () => {
+    const { page } = await open();
+    await page.click("#welcome-start");
+    await search(page, "tanpa daerah");
+    await resultsReady(page);
+    assert.equal(await text(page, "#regions"), "Pertanyaan tidak menyebut daerah, jadi yang dicari data nasional.");
+    await noBanned(page);
   });
 
   await step("a result without a BPS link shows the numbers but no link", async () => {
@@ -249,21 +302,28 @@ if (LIVE) {
     const geometry = await page.evaluate(() => {
       const r = document.getElementById("panel").getBoundingClientRect();
       const wrap = document.getElementById("table-wrap");
+      const atNewest = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 2;
       const before = document.querySelector("#table-wrap tbody th").getBoundingClientRect().left - wrap.getBoundingClientRect().left;
       wrap.scrollLeft = 300;
       const after = document.querySelector("#table-wrap tbody th").getBoundingClientRect().left - wrap.getBoundingClientRect().left;
       return { left: r.left, right: r.right, bottom: r.bottom, top: r.top, width: r.width, vw: innerWidth, vh: innerHeight,
-               scrolls: wrap.scrollWidth > wrap.clientWidth, stickyDrift: Math.abs(after - before) };
+               scrolls: wrap.scrollWidth > wrap.clientWidth, stickyDrift: Math.abs(after - before), atNewest,
+               modal: document.getElementById("panel").getAttribute("aria-modal"),
+               backdrop: getComputedStyle(document.getElementById("backdrop")).display,
+               listRight: document.getElementById("results").getBoundingClientRect().right };
     });
     assert.ok(geometry.scrolls, "wide table must scroll inside its box");
     assert.ok(geometry.stickyDrift < 2, "first column must stay in view");
-    return geometry;
+    assert.ok(geometry.atNewest, "a table with years across opens on the newest year");
+    return { ...geometry, page };
   }
 
   await step("phone 390x844: bottom sheet, no sideways scroll, big targets, sticky first column", async () => {
     const g = await layout("phone", { width: 390, height: 844 });
-    assert.ok(g.left === 0 && g.right === g.vw && g.bottom === g.vh, JSON.stringify(g));
+    assert.ok(g.left === 0 && g.right === g.vw && g.bottom === g.vh, JSON.stringify(g.vw));
     assert.ok(g.top >= g.vh * 0.1, "sheet must leave the page visible above it");
+    assert.equal(g.modal, "true");
+    assert.notEqual(g.backdrop, "none");
   });
 
   await step("phone in light mode: same layout", async () => {
@@ -273,7 +333,12 @@ if (LIVE) {
 
   await step("desktop 1280x800: side panel on the right", async () => {
     const g = await layout("desktop", { width: 1280, height: 800 });
-    assert.ok(g.right === g.vw && g.width <= 620 && g.top === 0 && g.bottom === g.vh, JSON.stringify(g));
+    assert.ok(g.right === g.vw && g.width <= 620 && g.top === 0 && g.bottom === g.vh, JSON.stringify(g.vw));
+    assert.equal(g.modal, "false");
+    assert.equal(g.backdrop, "none", "no dimming layer beside the list");
+    assert.ok(g.listRight <= g.left, `list ${g.listRight} runs under the panel at ${g.left}`);
+    await g.page.click("#results .result:nth-child(3) button.primary");  // another table while the panel is open
+    await g.page.waitForFunction(() => /Bandung/.test(document.querySelector("#table-wrap tr.hit th")?.textContent ?? ""));
   });
 }
 

@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.retrieval.bm25 import BM25
 from src.retrieval.dense import Dense, Hybrid
+from src.retrieval.period import latest_year
 from src.retrieval.region_rank import RegionRank
 from src.retrieval.regions import domains, find_regions
 from src.retrieval.rewrite import Rewriter
@@ -66,6 +67,7 @@ def result(row):
         "region": domains()[row["domain"]]["name"],
         "date": row["date"],
         "years": row["years"].tolist() if row["years"] is not None else None,  # SIMDASI only, numpy array
+        "latest_year": latest_year(row),  # the page tags tables whose newest year is old
         "table_code": row["table_code"],
         "url": row["url"],
         "url_built": row["url_built"],

@@ -1,4 +1,4 @@
-from src.retrieval.period import factor, of_row, periods
+from src.retrieval.period import factor, latest_year, of_row, periods
 
 
 def named(text):
@@ -52,3 +52,11 @@ def test_dalam_angka_tables_use_the_years_bps_has_them_for():
     row = {"title": "Luas Daerah Menurut Kecamatan", "type": "simdasi", "years": [2023, 2024, 2025]}
     assert of_row(row)["years"] == {2023, 2024, 2025}
     assert factor(periods("luas daerah 2025"), of_row(row)) > 1 > factor(periods("luas daerah 2019"), of_row(row))
+
+
+def test_latest_year_of_a_row():
+    archive = {"title": "Jumlah Penduduk Miskin Menurut Kabupaten/Kota (Ribu Orang), 2002-2016", "type": "statictable", "years": None}
+    assert latest_year(archive) == 2016
+    assert latest_year({"title": "Luas Daerah", "type": "simdasi", "years": [2023, 2025]}) == 2025
+    assert latest_year({"title": "Jumlah Penduduk Miskin (Ribu Jiwa)", "type": "var", "years": None}) is None
+    assert latest_year({"title": "Inflasi (2018=100)", "type": "var", "years": None}) is None

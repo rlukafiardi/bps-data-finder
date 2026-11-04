@@ -4,6 +4,10 @@ const API = window.API_BASE;
 const $ = (id) => document.getElementById(id);
 const TIMEOUT_MS = 45000; // a value can wait up to 15 s for a free slot with BPS, then BPS itself answers
 
+const OLD_AFTER_YEARS = 2; // a table whose newest year is older than this many years ago gets a "Data lama" tag
+const YEAR = /(?:19|20)\d{2}/;
+const WIDE = matchMedia("(min-width: 900px)"); // panel sits beside the results instead of over them
+
 const state = { regions: [], opener: null, doc: null };
 
 function remembered(key, value) {
@@ -73,6 +77,7 @@ async function search(question) {
     return;
   }
   error.textContent = "";
+  showWelcome(false);
   $("q").value = q;
   history.replaceState(null, "", "?q=" + encodeURIComponent(q));
   $("go").disabled = true;
@@ -98,23 +103,27 @@ function renderResults(data) {
   setStatus($("status"), `${data.results.length} hasil paling cocok`);
   $("regions").textContent = data.regions.length
     ? "Daerah yang dikenali: " + data.regions.map((r) => r.name).join(", ")
-    : "Pertanyaanmu tidak menyebut daerah, jadi yang dicari data nasional.";
+    : "Pertanyaan tidak menyebut daerah, jadi yang dicari data nasional.";
   $("results").replaceChildren(...data.results.map(resultCard));
 }
 
-function resultCard(item) {
+function resultCard(item, index) {
   const card = el("li", "card result");
+  const hasValues = item.type === "var" || item.type === "simdasi" || item.type === "statictable";
+  const old = hasValues && item.latest_year && item.latest_year < new Date().getFullYear() - OLD_AFTER_YEARS;
   const meta = el("div", "meta");
+  if (index === 0 && !old) meta.append(el("span", "tag best", "Paling cocok"));
   meta.append(el("span", "badge", item.type_label), el("span", "region", item.region));
+  if (old) meta.append(el("span", "tag old", "Data lama"));
   const facts = [];
   if (item.years && item.years.length) facts.push(`Tahun tersedia: ${item.years[0]}-${item.years[item.years.length - 1]}`);
+  else if (hasValues && item.latest_year) facts.push(`Tahun terakhir di judul: ${item.latest_year}`);
   const date = formatDate(item.date);
   if (date) facts.push((item.type === "publication" || item.type === "pressrelease" ? "Terbit: " : "Diperbarui: ") + date);
   card.append(meta, el("h3", "", item.title));
   if (facts.length) card.append(el("p", "small", facts.join(" · ")));
 
   const actions = el("div", "actions");
-  const hasValues = item.type === "var" || item.type === "simdasi" || item.type === "statictable";
   if (hasValues) {
     const show = el("button", "primary", "Lihat Angkanya");
     show.type = "button";
@@ -143,7 +152,9 @@ function openPanel(item, opener) {
   $("panel-link").hidden = !item.url;
   if (item.url) $("panel-link").href = item.url;
   $("backdrop").hidden = false;
+  $("panel").setAttribute("aria-modal", String(!WIDE.matches));
   $("panel").hidden = false;
+  document.body.classList.add("panel-open");
   $("panel-close").focus();
   loadValue();
 }
@@ -151,6 +162,7 @@ function openPanel(item, opener) {
 function closePanel() {
   $("panel").hidden = true;
   $("backdrop").hidden = true;
+  document.body.classList.remove("panel-open");
   if (state.opener) state.opener.focus();
 }
 
@@ -159,6 +171,7 @@ async function loadValue(period) {
   wrap.hidden = true;
   for (const id of ["unit", "panel-note", "panel-source", "panel-fetched"]) $(id).textContent = "";
   $("legend").hidden = true;
+  $("answer").hidden = true;
   $("period-box").hidden = true;
   setStatus($("panel-status"), "Mengambil angka dari BPS... Kalau lagi ramai, bisa sampai setengah menit.");
   const doc = state.doc;
@@ -169,6 +182,35 @@ async function loadValue(period) {
   } catch (e) {
     if (doc === state.doc) setStatus($("panel-status"), e.message, true);
   }
+}
+
+// The asked region's row, last three columns with a value: copied as given, never computed. For a table with
+// years as columns that is the newest data.
+function answerRows(data) {
+  return data.rows.filter((r) => r.highlight).slice(0, 2).map((row) => ({
+    label: row.label,
+    pairs: data.columns.map((c, i) => [c, row.values[i]]).filter(([, v]) => v !== null).slice(-3),
+  })).filter((r) => r.pairs.length);
+}
+
+function renderAnswer(data) {
+  const rows = answerRows(data);
+  const nodes = rows.map((r) => {
+    const box = el("div", "answer-row");
+    const list = el("dl", "answer-values");
+    for (const [column, value] of r.pairs) {
+      const item = el("div");
+      item.append(el("dt", "", column), el("dd", "", value));
+      list.append(item);
+    }
+    box.append(el("h3", "", r.label), list);
+    return box;
+  });
+  if (nodes.length && rows.some((r) => r.pairs.length < data.columns.length)) {
+    nodes.push(el("p", "small", "Tiga kolom terakhir di baris ini. Lengkapnya ada di tabel di bawah."));
+  }
+  $("answer").replaceChildren(...nodes);
+  $("answer").hidden = nodes.length === 0;
 }
 
 function renderValue(data) {
@@ -200,6 +242,9 @@ function renderValue(data) {
   const wrap = $("table-wrap");
   wrap.replaceChildren(table);
   wrap.hidden = false;
+  renderAnswer(data);
+  const years = data.columns.map((c) => (YEAR.exec(c) || [])[0]).filter(Boolean).map(Number);
+  if (years.length * 2 >= data.columns.length && years[0] < years.at(-1)) wrap.scrollLeft = wrap.scrollWidth; // oldest year first: open on the newest
   const hit = body.querySelector("tr.hit");
   if (hit) {
     wrap.scrollTop = hit.offsetTop - wrap.clientHeight / 2;
@@ -225,12 +270,6 @@ for (const chip of document.querySelectorAll(".chip")) {
 }
 $("help").addEventListener("click", () => showWelcome($("welcome").hidden));
 $("welcome-start").addEventListener("click", () => { showWelcome(false); $("q").focus(); });
-$("welcome-example").addEventListener("click", () => {
-  showWelcome(false);
-  const example = document.querySelector(".chip").textContent;
-  $("q").value = example;
-  search(example);
-});
 $("panel-close").addEventListener("click", closePanel);
 $("backdrop").addEventListener("click", closePanel);
 $("period").addEventListener("change", () => loadValue($("period").value));

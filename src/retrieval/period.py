@@ -52,6 +52,12 @@ def of_row(row):
     return found
 
 
+def latest_year(row):
+    """Newest year a catalog row covers, or None when its title names no year (most dynamic tables)."""
+    years = of_row(row)["years"]
+    return max(years) if years else None
+
+
 def factor(asked, found):
     """Score multiplier: for each of month, quarter and year that both name, boost if they share one."""
     result = 1.0
