@@ -219,3 +219,16 @@ Outside the page: idea 12 (rank old tables lower).
   `feedback` and `search` events to a file before they expire (part of the refresh script) or the labels are lost.
 - Unverified before deploy: the per-IP limit trusts the first X-Forwarded-For entry, which a caller can set; the global
   cap is what protects the log volume.
+
+## 2026-11-04: ideas 15-17 in the table panel
+
+- (15) "Salin Kutipan": `"<table title>", Badan Pusat Statistik, diakses <date, Asia/Jakarta> dari <BPS link>` (title, access date and
+  direct link, as the website terms ask). Hidden when the table has no BPS link. Panel only: publications and press
+  releases have no panel, so they have no citation button yet.
+- (16) "Unduh CSV": the shown table, cells as BPS gave them, separated by `;` (CSV_SEPARATOR) with a BOM: Excel in an Indonesian
+  locale splits on `;` because `,` is its decimal mark. pandas needs `sep=";"`. A cell that starts with `= + - @` and is not a number
+  (or a lone "-") gets a `'` in front so a spreadsheet does not run it as a formula.
+- (17) "Salin Tautan": `?q=<question>&buka=<doc_id>`. The search runs first (the asked region is highlighted), then the panel
+  opens; a link with only `buka` opens the table without searching. The period is not in the link.
+- Browser clipboard needs `clipboard-sanitized-write` as well as `clipboard-write` in the test's permission override. Running the
+  browser suite while the catalog refresh was loading the machine crashed Chrome ("Connection closed"): run them one at a time.

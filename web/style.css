@@ -169,6 +169,8 @@ tr.hit th, tr.hit td { background: var(--hit); font-weight: 600; }
 td.none { color: var(--muted); }
 .swatch { display: inline-block; width: 14px; height: 14px; background: var(--hit); border: 1px solid var(--line); vertical-align: -2px; border-radius: 3px; }
 .linkbtn { align-self: flex-start; }
+#panel-tools { gap: 6px; }
+#panel-tools button { padding: 0 11px; }
 
 .answer { display: grid; gap: 8px; }
 .answer-row { background: var(--hit); border-radius: 10px; padding: 10px 12px; }

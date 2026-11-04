@@ -7,9 +7,10 @@ const TIMEOUT_MS = 45000; // a value can wait up to 15 s for a free slot with BP
 const SLOW_AFTER_MS = 5000; // a server that slept starts in 15-30 s (estimate): say so instead of a bare "Mencari..."
 const OLD_AFTER_YEARS = 2; // a table whose newest year is older than this many years ago gets a "Data lama" tag
 const YEAR = /(?:19|20)\d{2}/;
+const CSV_SEPARATOR = ";"; // Excel with an Indonesian locale splits on ";" because "," is its decimal mark
 const WIDE = matchMedia("(min-width: 900px)"); // panel sits beside the results instead of over them
 
-const state = { question: "", regions: [], opener: null, doc: null };
+const state = { question: "", regions: [], opener: null, doc: null, data: null };
 
 function remembered(key, value) {
   try {
@@ -185,7 +186,7 @@ function bpsLink(url, className) {
 function openPanel(item, opener) {
   state.opener = opener;
   state.doc = item;
-  $("panel-title").textContent = item.title;
+  $("panel-title").textContent = item.title || "Memuat tabel...";
   $("panel-link").hidden = !item.url;
   if (item.url) $("panel-link").href = item.url;
   $("backdrop").hidden = false;
@@ -200,7 +201,7 @@ function closePanel() {
   $("panel").hidden = true;
   $("backdrop").hidden = true;
   document.body.classList.remove("panel-open");
-  if (state.opener) state.opener.focus();
+  (state.opener ?? $("q")).focus();
 }
 
 async function loadValue(period) {
@@ -209,6 +210,8 @@ async function loadValue(period) {
   for (const id of ["unit", "panel-note", "panel-source", "panel-fetched"]) $(id).textContent = "";
   $("legend").hidden = true;
   $("answer").hidden = true;
+  $("panel-tools").hidden = true;
+  state.data = null;
   $("period-box").hidden = true;
   setStatus($("panel-status"), "Mengambil angka dari BPS... Kalau lagi ramai, bisa sampai setengah menit.");
   const doc = state.doc;
@@ -251,7 +254,15 @@ function renderAnswer(data) {
 }
 
 function renderValue(data) {
+  state.data = data;
   setStatus($("panel-status"), "");
+  if (!state.doc.title) { // opened from a shared link: no search result gave a title or a link
+    $("panel-title").textContent = data.title;
+    $("panel-link").hidden = !data.url;
+    if (data.url) $("panel-link").href = data.url;
+  }
+  $("panel-tools").hidden = false;
+  $("panel-cite").hidden = !data.url; // BPS asks for a credit with title, access date and direct link
   if (data.unit) $("unit").textContent = "Satuan: " + data.unit;
   if (data.periods.length > 1) {
     $("period").replaceChildren(...data.periods.map((p) => {
@@ -295,6 +306,48 @@ function renderValue(data) {
   $("panel-fetched").textContent = `Angka diambil dari BPS pada ${fetched} WIB.`;
 }
 
+/* citation, CSV and link */
+
+async function copyText(button, text) {
+  const label = button.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Tersalin";
+  } catch {
+    button.textContent = "Gagal menyalin";
+  }
+  setTimeout(() => { button.textContent = label; }, 2000);
+}
+
+function citation(data) {
+  const date = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" });
+  return `"${data.title}", Badan Pusat Statistik, diakses ${date} dari ${data.url}`;
+}
+
+function csvCell(value) {
+  let text = value ?? "";
+  // a spreadsheet runs a cell that starts with = + - @ as a formula; numbers such as "-5,2" and a lone "-" are left as given
+  if (/^[=+\-@\t\r]/.test(text) && !/^[+-]?[\d.,]*\d$|^-$/.test(text)) text = "'" + text;
+  return text.includes(CSV_SEPARATOR) || /["\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function downloadCsv(data) {
+  const lines = [["Keterangan", ...data.columns], ...data.rows.map((r) => [r.label, ...r.values])];
+  const csv = "\uFEFF" + lines.map((cells) => cells.map(csvCell).join(CSV_SEPARATOR)).join("\r\n");
+  const link = el("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  link.download = "bps-" + data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) + ".csv";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
+}
+
+function tableLink(data) {
+  const params = new URLSearchParams(state.question ? { q: state.question, buka: data.doc_id } : { buka: data.doc_id });
+  return `${location.origin}${location.pathname}?${params}`;
+}
+
 /* wiring */
 
 $("search").addEventListener("submit", (e) => {
@@ -308,14 +361,22 @@ for (const chip of document.querySelectorAll(".chip")) {
 $("help").addEventListener("click", () => showWelcome($("welcome").hidden));
 $("welcome-start").addEventListener("click", () => { showWelcome(false); $("q").focus(); });
 $("panel-close").addEventListener("click", closePanel);
+$("panel-cite").addEventListener("click", (e) => copyText(e.currentTarget, citation(state.data)));
+$("panel-share").addEventListener("click", (e) => copyText(e.currentTarget, tableLink(state.data)));
+$("panel-csv").addEventListener("click", () => downloadCsv(state.data));
 $("backdrop").addEventListener("click", closePanel);
 $("period").addEventListener("change", () => loadValue($("period").value));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("panel").hidden) closePanel(); });
 
-const initial = new URLSearchParams(location.search).get("q");
+const params = new URLSearchParams(location.search);
+const initial = params.get("q");
+const linked = params.get("buka"); // a shared link: the search runs first so the asked region is known
+const openLinked = () => linked && openPanel({ doc_id: linked, title: "", url: null }, null);
 if (initial) {
   $("q").value = initial;
-  search(initial);
+  search(initial).then(openLinked);
+} else if (linked) {
+  openLinked();
 } else if (!remembered("welcome-seen")) {
   showWelcome(true);
 }

@@ -2,7 +2,9 @@
 // responses and counts calls. LIVE=1: the page against the real API on :8000 (calls Gemini and BPS).
 //   npm run test:e2e        LIVE=1 npm run test:e2e
 import assert from "node:assert/strict";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import puppeteer from "puppeteer-core";
 import { fakeApi } from "./fake_api.mjs";
 import { serveWeb } from "./serve.mjs";
@@ -259,6 +261,77 @@ if (LIVE) {
     await noBanned(page);
   });
 
+  await step("table tools: citation with today's date, CSV exactly as shown, shared link reopens the table", async () => {
+    const value = fixture("value_var.json"); // the third result of the recorded search is this var table
+    const docId = fixture("search.json").results[2].doc_id;
+    const { page } = await open();
+    const context = page.browserContext();
+    await context.overridePermissions(WEB, ["clipboard-read", "clipboard-write", "clipboard-sanitized-write"]);
+    const downloads = mkdtempSync(join(tmpdir(), "csv-"));
+    await (await browser.target().createCDPSession()).send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: downloads, browserContextId: context.id });
+    const clipboard = () => page.evaluate(() => navigator.clipboard.readText());
+    const fileAfterClick = async (selector) => {
+      const before = readdirSync(downloads).length;
+      await page.click(selector);
+      while (readdirSync(downloads).filter((f) => !f.endsWith(".crdownload")).length === before) await new Promise((r) => setTimeout(r, 50));
+      const name = readdirSync(downloads).filter((f) => !f.endsWith(".crdownload")).sort().at(-1);
+      return { name, text: readFileSync(join(downloads, name), "utf8") };
+    };
+    await page.click("#welcome-start");
+    await search(page, QUESTION);
+    await resultsReady(page);
+    await page.click("#results .result:nth-child(3) button.primary");
+    await valueReady(page);
+
+    await page.bringToFront();
+    await page.click("#panel-cite");
+    await page.waitForFunction(() => document.getElementById("panel-cite").textContent !== "Salin Kutipan");
+    assert.equal(await text(page, "#panel-cite"), "Tersalin");
+    const today = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" });
+    assert.equal(await clipboard(), `"${value.title}", Badan Pusat Statistik, diakses ${today} dari ${value.url}`);
+    await page.waitForFunction(() => document.getElementById("panel-cite").textContent === "Salin Kutipan");
+
+    const csv = await fileAfterClick("#panel-csv");
+    assert.equal(csv.name, "bps-tingkat-pengangguran-terbuka-kabupaten-kota.csv");
+    const expected = [["Keterangan", ...value.columns], ...value.rows.map((r) => [r.label, ...r.values])];
+    assert.equal(csv.text, "\uFEFF" + expected.map((cells) => cells.join(";")).join("\r\n"));
+
+    await page.click("#panel-share");
+    await page.waitForFunction(() => document.getElementById("panel-share").textContent === "Tersalin");
+    const link = new URL(await clipboard());
+    assert.equal(link.origin + link.pathname, WEB + "/");
+    assert.equal(link.searchParams.get("q"), QUESTION);
+    assert.equal(link.searchParams.get("buka"), docId);
+
+    const opened = await open({ url: link.href });
+    await valueReady(opened.page);
+    assert.equal(fake.calls.value.at(-1).doc_id, docId);
+    assert.ok(fake.calls.value.at(-1).regions, "the asked region is known before the table loads");
+    assert.equal(await text(opened.page, "#panel-title"), value.title);
+    assert.ok((await opened.page.$$("#results .result")).length > 0, "the results behind the panel are shown");
+    const searches = fake.calls.search.length;
+    const bare = await open({ url: `${WEB}/?buka=${encodeURIComponent(docId)}` });
+    await valueReady(bare.page);
+    assert.equal(fake.calls.search.length, searches, "a link without a question does not search");
+    await noBanned(page);
+  });
+
+  await step("CSV never carries a formula: only cells that start like one get a quote in front", async () => {
+    const { page } = await open();
+    const downloads = mkdtempSync(join(tmpdir(), "csv-"));
+    await (await browser.target().createCDPSession()).send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: downloads, browserContextId: page.browserContext().id });
+    await page.click("#welcome-start");
+    await search(page, "rumus");
+    await resultsReady(page);
+    await page.click("#results .result:nth-child(3) button.primary");
+    await valueReady(page);
+    await page.click("#panel-csv");
+    while (!readdirSync(downloads).some((f) => f.endsWith(".csv"))) await new Promise((r) => setTimeout(r, 50));
+    const rows = readFileSync(join(downloads, readdirSync(downloads).find((f) => f.endsWith(".csv"))), "utf8").split("\r\n");
+    assert.equal(rows[1].split(";")[0], `"'=HYPERLINK(""http://evil.example"")"`);
+    assert.equal(rows[2], fixture("value_var.json").rows[1].label + ";" + fixture("value_var.json").rows[1].values[0], "other rows stay as given");
+  });
+
   await step("a result without a BPS link shows the numbers but no link", async () => {
     const { page } = await open();
     await page.click("#welcome-start");
@@ -352,6 +425,8 @@ if (LIVE) {
                backdrop: getComputedStyle(document.getElementById("backdrop")).display,
                listRight: document.getElementById("results").getBoundingClientRect().right };
     });
+    const smallTools = await page.$$eval("#panel-tools button, #panel-link", (n) => n.filter((x) => x.offsetParent && x.getBoundingClientRect().height < 44).map((x) => x.textContent));
+    assert.deepEqual(smallTools, [], "panel buttons under 44px");
     assert.ok(geometry.scrolls, "wide table must scroll inside its box");
     assert.ok(geometry.stickyDrift < 2, "first column must stay in view");
     assert.ok(geometry.atNewest, "a table with years across opens on the newest year");

@@ -39,6 +39,11 @@ export function fakeApi(port) {
       if (q.includes("limit")) return send(429, { detail: "Terlalu banyak pencarian. Coba lagi sebentar." });
       if (q.includes("kosong")) return send(200, { ...fixture("search.json"), question: q, results: [], regions: [] });
       if (q.includes("lambat")) return void setTimeout(() => send(200, { ...fixture("search.json"), question: q }), 6000);
+      if (q.includes("rumus")) {
+        const risky = fixture("search.json");
+        risky.results[2].doc_id = "var:3200:rumus";
+        return send(200, risky);
+      }
       if (q.includes("tanpa daerah")) return send(200, { ...fixture("search.json"), question: q, regions: [] });
       if (q.includes("xss")) {
         const hostile = fixture("search.json");
@@ -64,8 +69,10 @@ export function fakeApi(port) {
       if (docId.includes("antre")) return send(429, { detail: "Sedang ramai. Coba lagi sebentar." });
       const kind = docId.startsWith("simdasi") ? "simdasi" : docId.startsWith("var") ? "var" : "static";
       const value = fixture(`value_${kind}.json`);
+      value.doc_id = docId; // the recordings were made for one table each; the real API answers with the id it was asked for
       if (url.searchParams.get("period")) value.period = url.searchParams.get("period");
       if (docId.includes("xss")) value.rows[0].label = '<img src=x onerror="window.__xss=1">';
+      if (docId.includes("rumus")) value.rows[0].label = '=HYPERLINK("http://evil.example")';
       return send(200, value);
     }
     send(404, { detail: "tidak ada" });
