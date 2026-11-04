@@ -10,7 +10,7 @@
   The id is in the BPS link: var / static table id after base64-decoding the link token, pub_id, brs_id.
 - `source`: `claude` (written from a need), `claude-seeded` (written from a random catalog item),
   `claude-ladder` (kab/kota without its own table), `claude-period` (month / quarter / year in the question), or
-  `radikal` / `user` for real searches. Generated questions were labelled with keyword filters plus pooled
+  `owner` / `user` for real searches. Generated questions were labelled with keyword filters plus pooled
   judging, but are still easier than real ones: add real questions when they become available (e.g. from
   app logs) and report them separately.
 

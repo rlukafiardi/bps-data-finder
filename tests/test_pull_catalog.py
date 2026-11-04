@@ -3,9 +3,15 @@ import os
 import time
 
 import httpx
+import pytest
 
 os.environ.setdefault("BPS_API_KEY", "test-key")
 from src.ingestion import pull_catalog  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def request_log(tmp_path, monkeypatch):
+    monkeypatch.setattr(pull_catalog, "LOG", tmp_path / "requests.log")
 
 
 def client(calls):

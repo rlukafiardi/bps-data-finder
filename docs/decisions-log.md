@@ -327,3 +327,18 @@ Outside the page: idea 12 (rank old tables lower).
   (v3, gua, "AI") and the carousel copy (`carousel-copy.md`, v2) are rewritten and wait for the owner's OK before any page is built.
 - Same day, after the owner's OK: the carousel is rebuilt from `carousel-copy.md` (neutral voice, no "Tulis di komentar" line on the
   last page, no labelled triplets, headline plus one sentence per page). The owner posts it; final texts get recorded here.
+
+## 2026-11-04: public showcase repo (option B), tests no longer need the pulled data
+
+- Scan before deciding (full history, 61 commits): one author (GitHub noreply), no key values, no employer or local paths; the only
+  personal email is in `gcloud.sh` (since e4708ac), and the working notes hold the billing account name and budgets. Chosen: a curated
+  export as for Jabodetabek, so the working repo stays private and no history is rewritten. No data-rights blocker (no BPS data
+  committed except ~20 KB of test fixtures).
+- `scripts/export_showcase.py` (allow-list, leak scan with your .env values, noreply identity check, local commit, never pushes) writes
+  `projects/bps-data-finder-showcase/` (README from `showcase/README.md`, MIT licence written after the scan). Not exported: CLAUDE.md,
+  this log, LinkedIn files, gcloud.sh, deploy and publish scripts. Scan hits fixed on the way: a `radikal` source label in
+  `evals/README.md` (now `owner`), and a pattern that matched across lines.
+- The exported tests failed on a fresh checkout (region lists and `requests.log` lived under `data/raw/`): `tests/conftest.py` now
+  points the region lists at `tests/fixtures/catalog/` (BPS's own public lists) and the pull tests log to a temp file. 27 tests pass
+  in both repos.
+- Not pushed: the owner creates the public repo and pushes after the scan; the BPS-application decision is still open.
