@@ -12,9 +12,10 @@ cd "$(dirname "$0")/.."
 
 region=asia-southeast2
 project=bps-data-finder
-image="$region-docker.pkg.dev/$project/api/api:$(git rev-parse --short HEAD)"
+# tagged by the last commit that changed what goes into the image, so a deploy without code changes reuses it
+image="$region-docker.pkg.dev/$project/api/api:$(git log -1 --format=%h -- Dockerfile pyproject.toml uv.lock src app)"
 
-./gcloud.sh builds submit --region "$region" --tag "$image" .
+./gcloud.sh artifacts docker images describe "$image" >/dev/null 2>&1 || ./gcloud.sh builds submit --region "$region" --tag "$image" .
 ./gcloud.sh run deploy api --region "$region" --image "$image" \
   --service-account "api-runtime@$project.iam.gserviceaccount.com" \
   --memory 2Gi --cpu 1 --cpu-boost --min-instances 0 --max-instances 1 --concurrency 8 --timeout 60 \
