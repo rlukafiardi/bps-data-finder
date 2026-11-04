@@ -97,6 +97,11 @@ def result(row):
     }
 
 
+@app.get("/api/health")
+def api_health():
+    return {"ok": True}  # a scheduler pings this to keep one instance warm; it takes no BPS or Gemini slot
+
+
 @app.get("/api/search")
 def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
     if over_limit(request):

@@ -1,0 +1,11 @@
+# upload only what the Dockerfile copies: no .env, data, login folder or dependency folders
+*
+!Dockerfile
+!pyproject.toml
+!uv.lock
+!src/
+!src/**
+!app/
+!app/**
+__pycache__/
+*.pyc
