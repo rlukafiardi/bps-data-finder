@@ -90,6 +90,10 @@ in the top 5, better than the site search?
   project), API https://api-823141605435.asia-southeast2.run.app (Cloud Run `api`, GCP project `bps-data-finder`, personal
   account via `./gcloud.sh`, max 1 instance, 2 GiB, catalog bucket `bps-data-finder-data` mounted read-only, keys in Secret
   Manager). Cold start 53 s. Deploy steps in the README; after every deploy `scripts/check_live.py` and `node tests/e2e/live.mjs`.
+- Next (from 2026-11-05): recheck a Dalam Angka link in a browser (BPS's statistics-table/3 pages failed on 11-04, BPS-supplied
+  links included; if they still fail, add a note on those results; if they work, try the kab/kota link to enable 23,598 links);
+  re-measure Gemini (free tier 503/504 on 11-04; candidate `gemini-3.5-flash`, needs an eval run); read billing after a day of
+  keep-warm pings (`api-keep-warm`, every 5 min); cold-start speed-up (vectors as .npy, saved BM25 index).
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
