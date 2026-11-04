@@ -305,3 +305,15 @@ Outside the page: idea 12 (rank old tables lower).
 - The cancelled first build had pushed a 3.5 GB image (b013b0c, with the NVIDIA packages); it and dddcdc6 were deleted after checking
   the service runs eeb42ab. One image left (739 MB). Older revisions point at deleted images: roll back by redeploying, not by
   shifting traffic.
+
+## 2026-11-04: LinkedIn post and carousel (drafts, not posted)
+
+- Post draft v2 (`docs/linkedin/post-draft.md`): the owner's own bottleneck first (every province and kabupaten has its own BPS site;
+  numbers hard to find, especially in publications); one limit: publications link to the publication, the numbers inside the PDF
+  are not shown. No accuracy claim (skill rule), no repo link (private).
+- Carousel (`docs/linkedin/cari-data-bps-carousel.pdf`, 8 pages, built by `build_carousel.py` from live-page phone screenshots made by
+  `capture_shots.mjs`). Facts: "lebih dari 540 situs" = 548 regional addresses in BPS's own region lists (34 provinces, 514
+  kab/kota) + bps.go.id; catalog counts from the 2026-11-04 build (74,945: Dalam Angka 28,926, tabel angka 20,898, tabel arsip
+  16,016, berita resmi 5,450, publikasi 3,655); Garut figures from the live Jawa Barat Dalam Angka table (year 2025).
+- Check before posting: Gemini reliability, billing, BPS application decision, Dalam Angka pages on bps.go.id (carousel avoids the
+  "Buka di BPS" button on those). Rebuild the carousel from the live page if the wording or layout of the page changes.
