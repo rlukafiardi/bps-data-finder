@@ -14,6 +14,14 @@ from src.retrieval.regions import domains, normalize
 from src.values.bps import BpsError, get
 
 PERIODS_SHOWN = 10  # the API lists periods newest first, 10 per page
+NO_UNIT = {"", "tidak ada satuan", "tidak ada", "tanpa satuan"}
+
+
+def column_label(turvar, turtahun, year):
+    """Sub-variable plus sub-period; id 0 means none ("Tidak ada", or "Tahun" for yearly data). BPS sends the id as a
+    number or a string, and labels with stray spaces."""
+    parts = [" ".join(x["label"].split()) for x in (turvar, turtahun) if str(x["val"]) != "0"]
+    return " ".join(parts) or year
 
 
 def var_table(domain, var_id, period=None):
@@ -40,10 +48,10 @@ def var_table(domain, var_id, period=None):
     keep = [i for i in range(len(columns)) if any(r["values"][i] is not None for r in rows)]  # sub-periods with no data
     return {
         "title": var["label"],
-        "unit": var["unit"] or None,
+        "unit": None if normalize(var["unit"] or "") in NO_UNIT else var["unit"],
         "period": chosen["th"],
         "periods": [{"id": str(p["th_id"]), "label": p["th"]} for p in periods[:PERIODS_SHOWN]],
-        "columns": [" ".join(x for x in (tv["label"] if tv["val"] != "0" else "", tt["label"]) if x) for tv, tt in (columns[i] for i in keep)],
+        "columns": [column_label(tv, tt, chosen["th"]) for tv, tt in (columns[i] for i in keep)],
         "rows": [{"label": r["label"], "values": [None if r["values"][i] is None else str(r["values"][i]) for i in keep]} for r in rows],
         "note": clean(var.get("note")) or None,
         "source": None,

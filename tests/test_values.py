@@ -98,3 +98,27 @@ def test_simdasi_table_row_without_some_columns(monkeypatch):
     assert t["note"] == "Catatan" and t["source"] == "BPS"
     with pytest.raises(ValueError):
         tables.simdasi_table("3200", "id", [2024, 2025], period="2019")
+
+
+def test_var_table_yearly_columns_without_tahun_and_no_unit(monkeypatch):
+    # Jumlah Akomodasi Hotel Bintang, DI Yogyakarta 2025 (var 3400:75), two of its rows; values as BPS returns them
+    periods = {"data": [{}, [{"th_id": 125, "th": "2025"}]]}
+    data = {
+        "data-availability": "available",
+        "var": [{"val": 75, "label": "Jumlah Akomodasi Hotel Bintang", "unit": "Tidak Ada Satuan", "note": ""}],
+        "turvar": [{"val": 164, "label": "Akomodasi "}, {"val": 165, "label": "Kamar"}, {"val": 166, "label": "Tempat Tidur "}],
+        "tahun": [{"val": 125, "label": "2025"}], "turtahun": [{"val": 0, "label": "Tahun"}],
+        "vervar": [{"val": 3400, "label": "D.I. Yogyakarta"}, {"val": 3401, "label": "Kulonprogo"}],
+        "datacontent": {"3400751641250": 222, "3400751651250": 21, "3400751661250": 32,
+                        "3401751641250": 6, "3401751651250": 723, "3401751661250": 1},
+    }
+    monkeypatch.setattr(tables, "get", lambda path, params=None: ((data if "/model/data/" in path else periods), 0.0))
+    t = tables.var_table("3400", "75")
+    assert t["columns"] == ["Akomodasi", "Kamar", "Tempat Tidur"]
+    assert t["unit"] is None
+    assert [r["values"] for r in t["rows"]] == [["222", "21", "32"], ["6", "723", "1"]]  # as given, odd as they look
+
+
+def test_column_label_falls_back_to_the_year():
+    assert tables.column_label({"val": "0", "label": "Tidak ada"}, {"val": 0, "label": "Tahun"}, "2025") == "2025"
+    assert tables.column_label({"val": "0", "label": "Tidak ada"}, {"val": 189, "label": "Februari"}, "2026") == "Februari"
