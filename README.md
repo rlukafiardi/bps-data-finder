@@ -1,17 +1,22 @@
 # BPS Data Finder
 
-Ask for a statistic in plain Bahasa Indonesia or English and get a ranked list of where it lives on
-bps.go.id: dynamic table, static table, publication (with table number and page) or press release.
-It points to sources and does not answer with numbers.
+Ask for a statistic in plain Bahasa Indonesia or English and get the BPS table, publication or press release
+that matches (dynamic table, static table, Dalam Angka table, publication, press release). For tables the page
+also shows the numbers, copied verbatim from the BPS API: no language model ever writes a number.
 
 ## Status
 
-POC: does hybrid retrieval over the BPS WebAPI catalog beat bps.go.id's own search? See `CLAUDE.md`.
+Built and tested locally: search API (FastAPI), Bahasa-Indonesia-first web page, catalog refresh script and an
+evaluation report. Not deployed yet. See `CLAUDE.md` for decisions and next steps, and `docs/eval-report.html`
+for how well the search finds the right source (Recall@5 0.977 on 88 generated questions, against 0.19 for
+bps.go.id's own search; no real user questions yet).
 
 ## Data sources
 
-- BPS WebAPI (webapi.bps.go.id): catalog of variables, static tables, publications and press releases per
-  region code. Needs a free API key. Terms and rate limits not yet verified.
+- BPS WebAPI (webapi.bps.go.id): catalog of dynamic tables, static tables, Dalam Angka (SIMDASI) tables,
+  publications and press releases for national, province and kab/kota; table values on request. Needs a free
+  API key; about 20 requests a minute. The page shows the attribution the API terms require.
+- Gemini API (free tier) rewrites the question into BPS wording. Without it the search still works, less well.
 
 ## How to run
 
