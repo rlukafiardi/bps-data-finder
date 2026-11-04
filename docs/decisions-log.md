@@ -289,3 +289,7 @@ Outside the page: idea 12 (rank old tables lower).
   the table then fills in needs a browser (plain requests cannot tell, headless Chrome is challenged on province sites).
 - Later the same evening Radikal opened the Bali dynamic-table link (`statistics-table/2/MTI5IzI=/...`) in a browser: it works.
   So the table links are right, and the earlier "Gagal Memuat Tabel" was bps.go.id failing for a while.
+- Same night: the Kota Bandung Dalam Angka link we built and the BPS-supplied Jawa Barat Dalam Angka link both show "Gagal Memuat
+  Tabel (Error Unknown)" in Radikal's browser, while a Bali dynamic table opens. So bps.go.id's Dalam Angka (statistics-table/3)
+  pages fail in general, BPS-supplied links included; the kab/kota link format stays unverified. Nothing changed on the page.
+  Recheck in a browser on 2026-11-05; if they still fail, add a short note on Dalam Angka results that the BPS page may not open.
