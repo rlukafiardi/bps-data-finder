@@ -342,3 +342,6 @@ Outside the page: idea 12 (rank old tables lower).
   points the region lists at `tests/fixtures/catalog/` (BPS's own public lists) and the pull tests log to a temp file. 27 tests pass
   in both repos.
 - Not pushed: the owner creates the public repo and pushes after the scan; the BPS-application decision is still open.
+- 2026-11-04: showcase published by the owner's go: https://github.com/rlukafiardi/bps-data-finder-showcase (public, one commit, noreply author,
+  MIT). Final scan before the push: authors, tree grep for email, billing and cloud ids, 61 tracked files. Update it with the export script
+  and a normal push after the scan; the private repo stays private.
