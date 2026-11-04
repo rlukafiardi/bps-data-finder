@@ -317,3 +317,11 @@ Outside the page: idea 12 (rank old tables lower).
   16,016, berita resmi 5,450, publikasi 3,655); Garut figures from the live Jawa Barat Dalam Angka table (year 2025).
 - Check before posting: Gemini reliability, billing, BPS application decision, Dalam Angka pages on bps.go.id (carousel avoids the
   "Buka di BPS" button on those). Rebuild the carousel from the live page if the wording or layout of the page changes.
+
+## 2026-11-04: voice feedback on the first drafts ("AI slop")
+
+- Owner: the post and carousel read as AI slop, e.g. "BPS dibantu model bahasa". Causes found: passive stacks from avoiding the first person,
+  pipeline explained in the post, slogans ("Satu angka, banyak situs"), a labelled "Satu batasan:" paragraph, and the builder's
+  bold-label-plus-gloss triplet on every feature page. The owner's own final Jabodetabek post is the reference (gua, active verbs, one
+  concrete number, tools named once, links last). `social-posting` skill reworked (workspace commit after this entry); the post
+  (v3, gua, "AI") and the carousel copy (`carousel-copy.md`, v2) are rewritten and wait for the owner's OK before any page is built.
