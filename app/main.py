@@ -26,8 +26,11 @@ from src.values.bps import Busy, BpsError
 from src.values.tables import mark_regions, simdasi_table, static_table, var_table
 
 CATALOG = "data/processed/catalog.parquet"
-SEARCHES_PER_MINUTE = 20  # per client IP
-FEEDBACK_PER_MINUTE = 200  # all visitors together, so a script cannot flood the logs
+PER_CLIENT_PER_MINUTE = 20
+# all visitors together, so a script with many addresses cannot burn the free tier or flood the logs; sized on a
+# laptop (search 0.04-0.7 s, value waits for a BPS slot), to re-check against Cloud Run latency
+TOTAL_PER_MINUTE = {"search": 120, "value": 60, "feedback": 200}
+MAX_TRACKED_CLIENTS = 10000
 TYPE_LABELS = {
     "var": "Tabel angka",
     "statictable": "Tabel arsip",
@@ -41,7 +44,7 @@ by_id = catalog.set_index("doc_id", drop=False)
 search = RegionRank(Hybrid(BM25(catalog), Dense(catalog)))
 rewriter = Rewriter(serving=True)
 recent = defaultdict(deque)
-feedback_recent = deque()
+total_recent = defaultdict(deque)
 
 app = FastAPI(title="BPS Data Finder")
 app.add_middleware(
@@ -58,27 +61,22 @@ def invalid_request(request, exc):
     return JSONResponse({"detail": [{"loc": e["loc"], "msg": e["msg"]} for e in exc.errors()]}, status_code=422)
 
 
-def over_limit(request):
-    # Cloud Run puts the client first in X-Forwarded-For
-    ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[0].strip()
-    now = time.monotonic()
-    calls = recent[ip]
+def full(calls, limit, now):
     while calls and calls[0] < now - 60:
         calls.popleft()
-    if len(calls) >= SEARCHES_PER_MINUTE:
+    if len(calls) >= limit:
         return True
     calls.append(now)
     return False
 
 
-def feedback_full():
+def over_limit(request, kind):
+    # Cloud Run appends the address it saw to X-Forwarded-For; every entry before it was sent by the caller
+    ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[-1].strip()
+    if len(recent) > MAX_TRACKED_CLIENTS:
+        recent.clear()  # windows are one minute long, so forgetting them costs at most one extra minute
     now = time.monotonic()
-    while feedback_recent and feedback_recent[0] < now - 60:
-        feedback_recent.popleft()
-    if len(feedback_recent) >= FEEDBACK_PER_MINUTE:
-        return True
-    feedback_recent.append(now)
-    return False
+    return full(recent[ip], PER_CLIENT_PER_MINUTE, now) or full(total_recent[kind], TOTAL_PER_MINUTE[kind], now)
 
 
 def result(row):
@@ -104,7 +102,7 @@ def api_health():
 
 @app.get("/api/search")
 def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
-    if over_limit(request):
+    if over_limit(request, "search"):
         raise HTTPException(429, "Terlalu banyak pencarian. Coba lagi sebentar.")
     rewrite = rewriter.rewrite_or_none(q)
     text = " ".join(p for p in (q, rewrite["query"], rewrite["region"]) if p) if rewrite else q
@@ -131,7 +129,7 @@ def api_feedback(request: Request, body: Feedback):
     """Did this result match the question? Logged like searches (no IP): the labels for the next golden set."""
     if body.doc_id not in by_id.index:
         raise HTTPException(404, "Hasil tidak ditemukan.")
-    if over_limit(request) or feedback_full():
+    if over_limit(request, "feedback"):
         raise HTTPException(429, "Terlalu banyak permintaan. Coba lagi sebentar.")
     print(json.dumps({"event": "feedback", "q": body.q, "doc_id": body.doc_id, "verdict": body.verdict}), flush=True)
 
@@ -146,7 +144,7 @@ def api_value(
     """The table behind one search result, as BPS gives it. Publications and press releases are links only."""
     if doc_id not in by_id.index:
         raise HTTPException(404, "Tabel tidak ditemukan.")
-    if over_limit(request):
+    if over_limit(request, "value"):
         raise HTTPException(429, "Terlalu banyak permintaan. Coba lagi sebentar.")
     row = by_id.loc[doc_id]
     try:

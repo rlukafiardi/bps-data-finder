@@ -22,6 +22,9 @@ CACHE = Path("data/processed/rewrite_cache.jsonl")
 RATE_LIMIT_WAIT_S = 65
 RETRIES = 3
 SERVING_TIMEOUT_MS = 10000  # Gemini rejects deadlines under 10 s
+# after a failure the API skips Gemini for a while: on 2026-11-04 the free tier answered 503/504 for most calls on every
+# Flash model, and each failed attempt added up to 10 s to a visitor's search
+COOLDOWN_S = 120
 
 PROMPT = """You rewrite questions about Indonesian official statistics (BPS) into a search query that matches
 how BPS titles its tables, publications and press releases.
@@ -60,9 +63,10 @@ class RewriteUnavailable(Exception):
 
 
 class Rewriter:
-    """serving=True (the API): never wait. A call inside the spacing window, a 429, a server error or a
-    timeout raises RewriteUnavailable at once, and the cache stays in memory (the data folder is
-    read-only there). serving=False (the eval): wait out limits and append to the cache file."""
+    """serving=True (the API): never wait. A call inside the spacing window or the cooldown after a failure
+    raises RewriteUnavailable at once; a 429, a server error or a timeout raises it and starts the cooldown.
+    The cache stays in memory (the data folder is read-only there). serving=False (the eval): wait out
+    limits and append to the cache file."""
 
     def __init__(self, model=REWRITE_MODEL, serving=False):
         load_dotenv(".env")
@@ -77,6 +81,7 @@ class Rewriter:
                 row = json.loads(line)
                 self.cache[row["key"]] = row["result"]
         self.last_call = 0.0
+        self.down_until = 0.0
 
     def _key(self, question):
         return hashlib.sha256(f"{self.model}\n{PROMPT}\n{question}".encode()).hexdigest()
@@ -105,16 +110,19 @@ class Rewriter:
 
     def _call_serving(self, question):
         with self.lock:
-            if time.monotonic() < self.last_call + REWRITE_SPACING_S:
-                raise RewriteUnavailable("inside the spacing window")
-            self.last_call = time.monotonic()
+            now = time.monotonic()
+            if now < self.last_call + REWRITE_SPACING_S or now < self.down_until:
+                raise RewriteUnavailable("inside the spacing window or the cooldown")
+            self.last_call = now
         try:
             response = self.client.models.generate_content(model=self.model, contents=question, config=self._config())
         except errors.ClientError as e:
             if e.code != 429:
                 raise
+            self.down_until = time.monotonic() + COOLDOWN_S
             raise RewriteUnavailable("rate limited") from e
         except (errors.ServerError, httpx2.TimeoutException) as e:
+            self.down_until = time.monotonic() + COOLDOWN_S
             raise RewriteUnavailable(type(e).__name__) from e
         return json.loads(response.text)
 
