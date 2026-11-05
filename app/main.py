@@ -26,6 +26,7 @@ from src.values.bps import Busy, BpsError
 from src.values.tables import mark_regions, simdasi_table, static_table, var_table
 
 CATALOG = "data/processed/catalog.parquet"
+SERVING = "data/processed/serving"  # indexes written by src.retrieval.save_index; they make the start faster
 PER_CLIENT_PER_MINUTE = 20
 # all visitors together, so a script with many addresses cannot burn the free tier or flood the logs; sized on a
 # laptop (search 0.04-0.7 s, value waits for a BPS slot), to re-check against Cloud Run latency
@@ -41,7 +42,7 @@ TYPE_LABELS = {
 
 catalog = pd.read_parquet(CATALOG)
 by_id = catalog.set_index("doc_id", drop=False)
-search = RegionRank(Hybrid(BM25(catalog), Dense(catalog)))
+search = RegionRank(Hybrid(BM25(catalog, saved=f"{SERVING}/bm25"), Dense(catalog, saved=f"{SERVING}/dense")))
 rewriter = Rewriter(serving=True)
 recent = defaultdict(deque)
 total_recent = defaultdict(deque)
