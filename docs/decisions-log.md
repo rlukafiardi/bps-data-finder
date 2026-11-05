@@ -345,3 +345,19 @@ Outside the page: idea 12 (rank old tables lower).
 - 2026-11-04: showcase published by the owner's go: https://github.com/rlukafiardi/bps-data-finder-showcase (public, one commit, noreply author,
   MIT). Final scan before the push: authors, tree grep for email, billing and cloud ids, 61 tracked files. Update it with the export script
   and a normal push after the scan; the private repo stays private.
+
+## 2026-11-05: day-after checks
+
+- Dalam Angka pages on bps.go.id still fail server-side (BPS-supplied national, Jawa Barat and Bali links, and the Kota Bandung link we built:
+  "Gagal Memuat Tabel Statistik"); dynamic and static table pages load. So the rule stays (no "Buka di BPS" on Dalam Angka results, a note instead)
+  and the kab/kota link format stays unverified. A browser check by the owner is still the only way to confirm they work again.
+- Gemini free tier: direct calls today, `gemini-3.5-flash-lite` 2 of 5 ok (median 1.3 s), `gemini-3.5-flash` 3 of 5 (median 2.6 s); the failures are fast 503s
+  (1-3 s), not the 14-40 s of last night. On the live API, 3 searches spaced beyond the cooldown: rewrite used in 2 (1.7 s each). The stored secret equals the
+  local key (hash compared). Over the 12 h since the deploy, 0 of 171 searches used the rewrite: the evening outage, plus test searches inside the 2-minute
+  cooldown. Idea, needs a deploy: retry once on a fast 503 and shorten the cooldown, since half of the calls work and one 503 now switches the rewrite off for
+  two minutes. Not worth switching models on 5 calls each.
+- Keep-warm (`api-keep-warm`): 156 pings in 12 h, all 200, latency up to 0.09 s; no cold start after 14:58 UTC on 11-04.
+- Usage (`scripts/usage.py`, adapted from Jabodetabek; the free amounts are per billing account): this project's month to date 443 requests, 587 vCPU-s,
+  813 GiB-s (1.4% and 1.0% of the free vCPU-s and GiB-s at its pace; the first day includes setup tests); Jabodetabek 3.1% and 0.7%; together about 4.5% of free
+  vCPU-s and 1.7% of GiB-s. Registry: 0.74 GB here + 0.31 GB there = 1.05 GB against 0.5 GB free, about 0.55 GB billed (about $0.06 a month at the unverified
+  $0.10 per GB). Data bucket 0.136 GB in Jakarta (billed, cents). The cost table itself is only in the console (Billing, Reports, group by SKU): not read yet.
