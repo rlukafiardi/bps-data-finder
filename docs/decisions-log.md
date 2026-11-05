@@ -363,3 +363,5 @@ Outside the page: idea 12 (rank old tables lower).
   $0.10 per GB). Data bucket 0.136 GB in Jakarta (billed, cents). The cost table itself is only in the console (Billing, Reports, group by SKU): not read yet.
 
 - 2026-11-05: Gemini rewrite: a server error (503) is retried once at once, then Gemini is skipped for 30 s (was 120 s for every failure; a 429 or timeout keeps 120 s). Reason: the checks showed fast 503s on about half of calls, and the next call usually worked, so the long cooldown threw away working calls. Unit tests cover both. Not deployed yet; re-measure the share of searches with a rewrite after the deploy.
+
+- 2026-11-05: Deployed the Gemini retry (revision api-00004-225, image b787bc9). check_live.py 0 failed; live.mjs passes on desktop and phone. Measured 16 live searches 7 s apart: 11 got a rewrite (before: 2 of 3 on a smaller sample). The 5 misses were consecutive (a Gemini outage window of about 35 s), then it recovered after the 30 s cooldown, as designed. Small sample; recheck with the logs later.
