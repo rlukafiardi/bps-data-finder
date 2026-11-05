@@ -92,10 +92,12 @@ in the top 5, better than the site search?
   Manager). Cold start 53 s. Deploy steps in the README; after every deploy `scripts/check_live.py` and `node tests/e2e/live.mjs`.
 - Public showcase: `uv run python scripts/export_showcase.py` builds `../bps-data-finder-showcase` (allow-list, leak scan, noreply commit, never pushes);
   this repo stays private. Rerun it after changes the public copy should have, and never push the showcase without the owner's go.
-- Next (from 2026-11-05): recheck a Dalam Angka link in a browser (BPS's statistics-table/3 pages failed on 11-04, BPS-supplied
-  links included; if they still fail, add a note on those results; if they work, try the kab/kota link to enable 23,598 links);
-  re-measure Gemini (free tier 503/504 on 11-04; candidate `gemini-3.5-flash`, needs an eval run); read billing after a day of
-  keep-warm pings (`api-keep-warm`, every 5 min); cold-start speed-up (vectors as .npy, saved BM25 index).
+- Next (from 2026-11-05 checks): (a) Gemini: a 503 is now retried once and the cooldown is 30 s (code done, tests pass, **not deployed**:
+  needs the owner's go; then re-measure); (b) owner: open a Dalam Angka link in a browser (statistics-table/3 failed server-side on 11-04
+  and 11-05; if it works, try the kab/kota link to enable 23,598 links); (c) owner: read the console billing report by SKU (registry
+  about 0.55 GB over free, est. $0.06/month, unverified); (d) cold-start speed-up (vectors as .npy, saved BM25 index); (e) BPS-application
+  decision; (f) owner posts the LinkedIn post and carousel, then the final text goes in the decisions log. Keep-warm works (156 pings, no cold start);
+  usage about 1.4% of free vCPU-s.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:

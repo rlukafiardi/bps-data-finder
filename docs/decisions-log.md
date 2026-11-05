@@ -361,3 +361,5 @@ Outside the page: idea 12 (rank old tables lower).
   813 GiB-s (1.4% and 1.0% of the free vCPU-s and GiB-s at its pace; the first day includes setup tests); Jabodetabek 3.1% and 0.7%; together about 4.5% of free
   vCPU-s and 1.7% of GiB-s. Registry: 0.74 GB here + 0.31 GB there = 1.05 GB against 0.5 GB free, about 0.55 GB billed (about $0.06 a month at the unverified
   $0.10 per GB). Data bucket 0.136 GB in Jakarta (billed, cents). The cost table itself is only in the console (Billing, Reports, group by SKU): not read yet.
+
+- 2026-11-05: Gemini rewrite: a server error (503) is retried once at once, then Gemini is skipped for 30 s (was 120 s for every failure; a 429 or timeout keeps 120 s). Reason: the checks showed fast 503s on about half of calls, and the next call usually worked, so the long cooldown threw away working calls. Unit tests cover both. Not deployed yet; re-measure the share of searches with a rewrite after the deploy.
