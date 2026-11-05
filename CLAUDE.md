@@ -89,12 +89,12 @@ in the top 5, better than the site search?
 - Live since 2026-11-04: https://cari-data-bps.netlify.app (Netlify `cari-data-bps`, token copied from the jabodetabek
   project), API https://api-823141605435.asia-southeast2.run.app (Cloud Run `api`, GCP project `bps-data-finder`, personal
   account via `./gcloud.sh`, max 1 instance, 2 GiB, catalog bucket `bps-data-finder-data` mounted read-only, keys in Secret
-  Manager). Cold start 53 s. Deploy steps in the README; after every deploy `scripts/check_live.py` and `node tests/e2e/live.mjs`.
+  Manager). Cold start about 42 s from the container start (saved indexes since 2026-11-05). Deploy steps in the README; after every deploy `scripts/check_live.py` and `node tests/e2e/live.mjs`.
 - Public showcase: `uv run python scripts/export_showcase.py` builds `../bps-data-finder-showcase` (allow-list, leak scan, noreply commit, never pushes);
   this repo stays private. Rerun it after changes the public copy should have, and never push the showcase without the owner's go.
 - Next (from 2026-11-05 checks): (a) Gemini: a 503 is now retried once and the cooldown is 30 s (code done, tests pass, **not deployed**:
   needs the owner's go; then re-measure); (b) owner: open a Dalam Angka link in a browser (statistics-table/3 failed server-side on 11-04
-  and 11-05; if it works, try the kab/kota link to enable 23,598 links); (c) billing read 2026-11-05: Rp569 so far, all other lines Rp0 (see log); recheck around the 1st of the month; (d) cold-start speed-up (vectors as .npy, saved BM25 index); (e) BPS-application
+  and 11-05; if it works, try the kab/kota link to enable 23,598 links); (c) billing read 2026-11-05: Rp569 so far, all other lines Rp0 (see log); recheck around the 1st of the month; (e) BPS-application
   decision; (f) owner posts the LinkedIn post and carousel, then the final text goes in the decisions log. Keep-warm works (156 pings, no cold start);
   usage about 1.4% of free vCPU-s.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
