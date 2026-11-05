@@ -94,8 +94,7 @@ in the top 5, better than the site search?
   this repo stays private. Rerun it after changes the public copy should have, and never push the showcase without the owner's go.
 - Next (from 2026-11-05 checks): (a) Gemini: a 503 is now retried once and the cooldown is 30 s (code done, tests pass, **not deployed**:
   needs the owner's go; then re-measure); (b) owner: open a Dalam Angka link in a browser (statistics-table/3 failed server-side on 11-04
-  and 11-05; if it works, try the kab/kota link to enable 23,598 links); (c) owner: read the console billing report by SKU (registry
-  about 0.55 GB over free, est. $0.06/month, unverified); (d) cold-start speed-up (vectors as .npy, saved BM25 index); (e) BPS-application
+  and 11-05; if it works, try the kab/kota link to enable 23,598 links); (c) billing read 2026-11-05: Rp569 so far, all other lines Rp0 (see log); recheck around the 1st of the month; (d) cold-start speed-up (vectors as .npy, saved BM25 index); (e) BPS-application
   decision; (f) owner posts the LinkedIn post and carousel, then the final text goes in the decisions log. Keep-warm works (156 pings, no cold start);
   usage about 1.4% of free vCPU-s.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
