@@ -32,7 +32,7 @@ cp .env.example .env   # add BPS_API_KEY; GEMINI_API_KEY (aistudio.google.com) f
 uv run python -m src.ingestion.pull_catalog    # resumable, ~20 requests/min
 uv run python -m src.ingestion.build_catalog   # -> data/processed/catalog.parquet
 uv run python -m evals.run_eval                # Recall@5 / MRR per method
-scripts/refresh.sh [recent|all]                # refresh the catalog, embed new rows, smoke-test with the eval
+scripts/refresh.sh [recent|all]                # refresh the catalog, embed new rows, smoke-test with the eval, save the indexes the API loads
 uv run uvicorn app.main:app --port 8000        # API: /api/search?q=..., /api/value?doc_id=...
 uv run pytest -q tests
 npm install && npm run test:e2e                # page in real Chrome against a fake API

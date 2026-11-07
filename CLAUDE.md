@@ -77,15 +77,16 @@ in the top 5, better than the site search?
 ## Status
 - Works: catalog builder, region lookup (`src/retrieval/regions.py`), BM25, dense (multilingual-e5-small),
   RRF hybrid, region-aware ranking, eval (`uv run python -m evals.run_eval`).
-- Results on the complete catalog (74,938 rows), 88 Claude-written questions, pooled judging, R@5 / MRR:
+- Results on the complete catalog (74,945 rows), 88 Claude-written questions, pooled judging, R@5 / MRR:
   BPS search literal 0.09/0.09 and keywords+retry 0.19/0.15 (measured on the first 70 questions,
   `evals/site_search_baseline.py`), bm25+region 0.85/0.68, hybrid+region 0.82/0.70,
   rewrite v2+hybrid+region 0.98/0.83 (`data/processed/eval_period_final.txt`). Misses: "garis kemiskinan
   provinsi" (rank 8), "harga sembako di pematangsiantar" (rank 7).
-- Next (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): done: risks 1-4, search API,
-  values API, region filter (rewrite+hybrid+region R@5 0.93 / MRR 0.70 on 75 q), web page `web/` (local;
-  `uv run pytest -q tests`, `npm run test:e2e`). Not registered as a BPS application (Radikal's call). Refresh script and eval report done (`scripts/refresh.sh`,
-  `docs/eval-report.html`). Architecture diagram done (`docs/architecture.py`; update it when a component, store or flow changes).
+- Built (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): search API with a results cutoff (only hits scoring at least
+  0.7 of the best) and a `no_match` flag (best hit has under 30% of the question words), values API, region filter, web page `web/`
+  (`uv run pytest -q tests`, `npm run test:e2e`), refresh script (`scripts/refresh.sh`, also saves the indexes the API loads) and eval report
+  (`docs/eval-report.html`), architecture diagram (`docs/architecture.py`; update it when a component, store or flow changes). Not registered
+  as a BPS application (owner's call).
 - Live since 2026-11-04: https://cari-data-bps.netlify.app (Netlify `cari-data-bps`, token copied from the jabodetabek
   project), API https://api-823141605435.asia-southeast2.run.app (Cloud Run `api`, GCP project `bps-data-finder`, personal
   account via `./gcloud.sh`, max 1 instance, 2 GiB, catalog bucket `bps-data-finder-data` mounted read-only, keys in Secret
