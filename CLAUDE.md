@@ -80,7 +80,7 @@ in the top 5, better than the site search?
 - Results on the complete catalog (74,945 rows), 88 Claude-written questions, pooled judging, R@5 / MRR:
   BPS search literal 0.09/0.09 and keywords+retry 0.19/0.15 (measured on the first 70 questions,
   `evals/site_search_baseline.py`), bm25+region 0.85/0.68, hybrid+region 0.82/0.70,
-  rewrite v2+hybrid+region 0.98/0.83 (`data/processed/eval_period_final.txt`). Misses: "garis kemiskinan
+  rewrite v2+hybrid+region 0.98/0.83 (`evals/history.csv`, `docs/eval-report.html`). Misses: "garis kemiskinan
   provinsi" (rank 8), "harga sembako di pematangsiantar" (rank 7).
 - Built (full build, plan approved 2026-11-03; log in `docs/decisions-log.md`): search API with a results cutoff (only hits scoring at least
   0.7 of the best) and a `no_match` flag (best hit has under 30% of the question words), values API, region filter, web page `web/`
