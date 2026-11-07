@@ -2,7 +2,7 @@ Cari data di BPS itu ribet. Tiap provinsi dan kabupaten punya situs sendiri, jad
 
 Makanya gua bikin Cari Data BPS. Ketik pertanyaan biasa, misalnya "jumlah penduduk miskin kabupaten garut", langsung keluar tabel Jawa Barat dengan baris Garut: 9,39 persen (Maret 2025). Angkanya langsung dari API BPS.
 
-Bedanya sama pencarian yang cuma nyocokin kata: "jumlah penganggur" di situ nemu tabel curah hujan, karena sama-sama ada kata "jumlah". Di sini kata dan artinya sama-sama dicocokin, jadi yang keluar Tingkat Pengangguran Terbuka. Nama daerah di pertanyaan juga ikut dibaca, jadi tabel daerah itu naik ke atas. Kalau hasilnya publikasi, gua kasih link-nya aja, angka di dalam PDF belum bisa ditarik.
+Nyarinya gabungan tiga hal: BM25 buat nyocokin kata kunci, semantic search buat nyocokin arti, dan AI buat nerjemahin pertanyaan ke istilah BPS. Contohnya "bayi yang meninggal": kalau cuma nyocokin kata, yang keluar tabel korban bencana dan kasus AIDS. Kalau artinya ikut dicocokin, yang keluar Angka Kematian Bayi. Kalau hasilnya publikasi, gua kasih link-nya aja, angka di dalam PDF belum bisa ditarik.
 
 cari-data-bps.netlify.app
 Codebase: github.com/rlukafiardi/bps-data-finder-showcase

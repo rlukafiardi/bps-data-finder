@@ -63,11 +63,12 @@ feature(4, PAPER, NAVY, [("Barisnya", False), ("langsung ketemu.", False)], "cro
 
 # 5 bedanya
 fits(["Bedanya sama", "pencarian biasa."], 84)
+fits(["Cuma kata kunci (BM25)", "Kata dan arti (semantic)"], 56)
 slide(5, NAVY, PAPER)
 y = headline(M, H - 230, [("Bedanya sama", False), ("pencarian biasa.", False)], 84, PAPER)
 y -= 60
-for head, line in [("Cuma cocokin kata", '"jumlah penganggur" nemu tabel curah hujan, karena sama-sama ada kata "jumlah".'),
-                   ("Cocokin kata dan arti", '"jumlah penganggur" nemu Tingkat Pengangguran Terbuka.')]:
+for head, line in [("Cuma kata kunci (BM25)", '"bayi yang meninggal" nemu tabel korban bencana dan kasus AIDS, karena sama-sama ada kata "meninggal".'),
+                   ("Kata dan arti (semantic)", '"bayi yang meninggal" nemu Angka Kematian Bayi.')]:
     c.setStrokeColor(SKY); c.setLineWidth(2); c.line(M, y + 74, W - M, y + 74)
     y = text(c, M, y, head, "PJS-XBold", 56, SKY, W - 2 * M)
     y = text(c, M, y - 4, line, "PJS-Medium", 44, PAPER, W - 2 * M, 1.3) - 80

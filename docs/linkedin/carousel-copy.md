@@ -1,4 +1,4 @@
-Carousel copy v3 (plain text for approval; nothing is built from it yet). Changes from v2: page 4 loses "bukan ditulis AI"; new page 5 explains the search (word match plus meaning match); 9 pages.
+Carousel copy v4 (plain text for approval; nothing is built from it yet). Changes from v2: page 4 loses "bukan ditulis AI"; new page 5 explains the search (word match plus meaning match); 9 pages.
 
 1 cover (screenshot: home)
   Cari data BPS tanpa buka situsnya satu-satu.
@@ -19,8 +19,8 @@ Carousel copy v3 (plain text for approval; nothing is built from it yet). Change
 
 5 why it differs (new, no screenshot; two stacked blocks like page 2)
   Bedanya sama pencarian biasa.
-  Cuma cocokin kata: "jumlah penganggur" nemu tabel curah hujan, karena sama-sama ada kata "jumlah".
-  Cocokin kata dan arti: "jumlah penganggur" nemu Tingkat Pengangguran Terbuka.
+  Cuma kata kunci (BM25): "bayi yang meninggal" nemu tabel korban bencana dan kasus AIDS, karena sama-sama ada kata "meninggal".
+  Kata dan arti (semantic): "bayi yang meninggal" nemu Angka Kematian Bayi.
   (small line under the blocks) AI nerjemahin pertanyaan ke istilah BPS dulu, misalnya "sembako" jadi "harga eceran bahan pokok".
 
 6 numbers
