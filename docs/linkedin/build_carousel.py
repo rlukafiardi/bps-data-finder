@@ -1,4 +1,4 @@
-"""Builds docs/linkedin/cari-data-bps-carousel.pdf (LinkedIn document post, 8 pages of 1080 x 1350). Identity and builder: the workspace skill social-posting.
+"""Builds docs/linkedin/cari-data-bps-carousel.pdf (LinkedIn document post, 9 pages of 1080 x 1350). Identity and builder: the workspace skill social-posting.
 Screenshots come from docs/linkedin/capture_shots.mjs (the live page, phone size, 3x); this script crops them.
 
     uv run --no-project --with reportlab --with pillow python -I docs/linkedin/build_carousel.py
@@ -24,7 +24,7 @@ for src, box, out in [
 ]:
     Image.open(SHOTS / src).crop(box).save(SHOTS / out)
 
-k = Carousel(HERE / "cari-data-bps-carousel.pdf", total=8, title="Cari Data BPS: satu pencarian untuk data BPS pusat dan daerah", shots=SHOTS)
+k = Carousel(HERE / "cari-data-bps-carousel.pdf", total=9, title="Cari Data BPS: satu pencarian untuk data BPS pusat dan daerah", shots=SHOTS)
 c, slide, headline, shot, feature = k.c, k.slide, k.headline, k.shot, k.feature
 
 
@@ -59,10 +59,22 @@ feature(3, SKY, NAVY, [("Ketik", False), ("pertanyaannya.", False)], "crop_searc
 # 4 baris daerah
 fits(["Barisnya", "langsung ketemu."], 84)
 feature(4, PAPER, NAVY, [("Barisnya", False), ("langsung ketemu.", False)], "crop_garut.png",
-        caption="Baris daerah yang dicari ada paling atas. Angkanya langsung dari API BPS, bukan ditulis AI.")
+        caption="Baris daerah yang dicari ada paling atas. Angkanya langsung dari API BPS.")
 
-# 5 angka
-slide(5, BLUE, PAPER)
+# 5 bedanya
+fits(["Bedanya sama", "pencarian biasa."], 84)
+slide(5, NAVY, PAPER)
+y = headline(M, H - 230, [("Bedanya sama", False), ("pencarian biasa.", False)], 84, PAPER)
+y -= 60
+for head, line in [("Cuma cocokin kata", '"jumlah penganggur" nemu tabel curah hujan, karena sama-sama ada kata "jumlah".'),
+                   ("Cocokin kata dan arti", '"jumlah penganggur" nemu Tingkat Pengangguran Terbuka.')]:
+    c.setStrokeColor(SKY); c.setLineWidth(2); c.line(M, y + 74, W - M, y + 74)
+    y = text(c, M, y, head, "PJS-XBold", 56, SKY, W - 2 * M)
+    y = text(c, M, y - 4, line, "PJS-Medium", 44, PAPER, W - 2 * M, 1.3) - 80
+text(c, M, y, 'AI nerjemahin pertanyaan ke istilah BPS dulu, misalnya "sembako" jadi "harga eceran bahan pokok".', "PJS-Regular", 32, SKY, W - 2 * M, 1.3)
+
+# 6 angka
+slide(6, BLUE, PAPER)
 headline(M, H - 270, [("74.945", True)], 190, PAPER)
 text(c, M, H - 360, "sumber data yang bisa dicari", "PJS-Bold", 40, PAPER, W - 2 * M)
 y = 770
@@ -72,14 +84,14 @@ for label, value in [("DALAM ANGKA", "28.926"), ("TABEL ANGKA", "20.898"), ("TAB
     c.setFillColor(PAPER); c.setFont("PJS-XBold", 62); c.drawRightString(W - M, y + 8, value)
     y -= 120
 
-# 6 salin
+# 7 salin
 fits(["Tinggal", "salin."], 84)
-feature(6, SKY, NAVY, [("Tinggal", False), ("salin.", False)], "crop_tools.png",
+feature(7, SKY, NAVY, [("Tinggal", False), ("salin.", False)], "crop_tools.png",
         caption="Salin kutipan (judul, tanggal akses, link BPS), unduh CSV, atau salin link ke tabelnya. Di bawah tabel ada sumber dan kapan angkanya diambil.")
 
-# 7 batasan
+# 8 batasan
 fits(["Yang belum", "bisa."], 100)
-slide(7, PAPER, NAVY)
+slide(8, PAPER, NAVY)
 headline(M, H - 240, [("Yang belum", False), ("bisa.", False)], 100, NAVY)
 y = H - 500
 for s_ in ["Publikasi: baru link ke publikasinya (terbitan 2025 dan 2026), angka di dalam PDF belum bisa ditarik.",
@@ -88,8 +100,8 @@ for s_ in ["Publikasi: baru link ke publikasinya (terbitan 2025 dan 2026), angka
     c.setStrokeColor(SKY); c.setLineWidth(2); c.line(M, y + 50, W - M, y + 50)
     y = text(c, M, y, s_, "PJS-SemiBold", 40, NAVY, W - 2 * M, 1.22) - 64
 
-# 8 penutup
-slide(8, NAVY, PAPER)
+# 9 penutup
+slide(9, NAVY, PAPER)
 text(c, M, H - 560, "cari-data-bps.netlify.app", "PJS-XBold", 56, PAPER, W - 2 * M)
 text(c, M, H - 640, "Data dari BPS. Situs ini bukan produk resmi BPS.", "PJS-Regular", 30, SKY, W - 2 * M)
 

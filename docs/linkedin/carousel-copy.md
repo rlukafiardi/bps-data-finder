@@ -1,4 +1,4 @@
-Carousel copy v2 (plain text for approval; nothing is built from it yet). Screenshots stay as in v1.
+Carousel copy v3 (plain text for approval; nothing is built from it yet). Changes from v2: page 4 loses "bukan ditulis AI"; new page 5 explains the search (word match plus meaning match); 9 pages.
 
 1 cover (screenshot: home)
   Cari data BPS tanpa buka situsnya satu-satu.
@@ -15,22 +15,28 @@ Carousel copy v2 (plain text for approval; nothing is built from it yet). Screen
 
 4 answer (screenshot: Garut)
   Barisnya langsung ketemu.
-  Baris daerah yang dicari ada paling atas. Angkanya langsung dari API BPS, bukan ditulis AI.
+  Baris daerah yang dicari ada paling atas. Angkanya langsung dari API BPS.
 
-5 numbers
+5 why it differs (new, no screenshot; two stacked blocks like page 2)
+  Bedanya sama pencarian biasa.
+  Cuma cocokin kata: "jumlah penganggur" nemu tabel curah hujan, karena sama-sama ada kata "jumlah".
+  Cocokin kata dan arti: "jumlah penganggur" nemu Tingkat Pengangguran Terbuka.
+  (small line under the blocks) AI nerjemahin pertanyaan ke istilah BPS dulu, misalnya "sembako" jadi "harga eceran bahan pokok".
+
+6 numbers
   74.945 sumber data yang bisa dicari
   Dalam Angka 28.926, tabel angka 20.898, tabel arsip 16.016, berita resmi 5.450, publikasi 3.655.
 
-6 tools (screenshot: tools)
+7 tools (screenshot: tools)
   Tinggal salin.
   Salin kutipan (judul, tanggal akses, link BPS), unduh CSV, atau salin link ke tabelnya. Di bawah tabel ada sumber dan kapan angkanya diambil.
 
-7 limits
+8 limits
   Yang belum bisa.
   Publikasi: baru link ke publikasinya (terbitan 2025 dan 2026), angka di dalam PDF belum bisa ditarik.
   Kabupaten/kota: baru tabel Dalam Angka.
   AI-nya versi gratis, jadi kalau lagi sibuk hasilnya bisa kurang pas dan lebih lambat.
 
-8 end
+9 end
   cari-data-bps.netlify.app
   Data dari BPS. Situs ini bukan produk resmi BPS.
