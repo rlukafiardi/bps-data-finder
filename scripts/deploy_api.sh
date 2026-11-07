@@ -24,3 +24,13 @@ image="$region-docker.pkg.dev/$project/api/api:$(git log -1 --format=%h -- Docke
   --set-env-vars "ALLOWED_ORIGINS=$SITE_ORIGIN" \
   --add-volume name=data,type=cloud-storage,bucket=bps-data-finder-data,readonly=true \
   --add-volume-mount volume=data,mount-path=/app/data
+
+# each deploy of new code leaves its image behind (about 0.74 GB, and 0.5 GB is free): keep only the one now serving.
+# Revisions before this one then point at deleted images, so a rollback means redeploying an older commit.
+[[ "$(./gcloud.sh run services describe api --region "$region" --format='value(spec.template.spec.containers[0].image)')" == "$image" ]] \
+  || { echo "the service does not run $image: not pruning" >&2; exit 1; }
+repo="$region-docker.pkg.dev/$project/api"
+./gcloud.sh artifacts docker images list "$repo" --include-tags --format='csv[no-heading](IMAGE,DIGEST,TAGS)' \
+  | while IFS=, read -r name digest tags; do
+      [[ "$tags" == *"${image##*:}"* ]] || ./gcloud.sh artifacts docker images delete "${name}@${digest}" --delete-tags --quiet
+    done
