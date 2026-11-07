@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from src.retrieval.bm25 import BM25
 from src.retrieval.dense import Dense, Hybrid
+from src.retrieval.coverage import no_match
 from src.retrieval.period import latest_year
 from src.retrieval.region_rank import RegionRank, close_matches
 from src.retrieval.regions import domains, find_regions
@@ -108,13 +109,15 @@ def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
     rewrite = rewriter.rewrite_or_none(q)
     text = " ".join(p for p in (q, rewrite["query"], rewrite["region"]) if p) if rewrite else q
     hits = close_matches(search.search(text, k=5))
+    nothing = bool(len(hits)) and no_match(text, hits.iloc[0])
     hits = hits.astype(object).where(hits.notna(), None)
     # question text only, no IP: real queries become the next golden set
-    print(json.dumps({"event": "search", "q": q, "rewrite": rewrite is not None, "results": hits["doc_id"].tolist()}), flush=True)
+    print(json.dumps({"event": "search", "q": q, "rewrite": rewrite is not None, "no_match": nothing, "results": hits["doc_id"].tolist()}), flush=True)
     return {
         "question": q,
         "rewrite": rewrite,
         "regions": [{"id": d, "name": domains()[d]["name"]} for d in find_regions(text)],
+        "no_match": nothing,  # the best result has almost none of the question's words: probably no BPS data on it
         "results": [result(r) for r in hits.to_dict("records")],
     }
 
