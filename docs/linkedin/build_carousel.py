@@ -67,12 +67,12 @@ fits(["Cuma kata kunci (BM25)", "Kata dan arti (semantic)"], 56)
 slide(5, NAVY, PAPER)
 y = headline(M, H - 230, [("Bedanya sama", False), ("pencarian biasa.", False)], 84, PAPER)
 y -= 60
-for head, line in [("Cuma kata kunci (BM25)", '"bayi yang meninggal" nemu tabel korban bencana dan kasus AIDS, karena sama-sama ada kata "meninggal".'),
-                   ("Kata dan arti (semantic)", '"bayi yang meninggal" nemu Angka Kematian Bayi.')]:
+for head, line in [("Cuma kata kunci (BM25)", '"turis asing yang datang" nemu tabel harga valuta asing, karena sama-sama ada kata "asing".'),
+                   ("Kata dan arti (semantic)", '"turis asing yang datang" nemu Jumlah Kedatangan Wisatawan Mancanegara.')]:
     c.setStrokeColor(SKY); c.setLineWidth(2); c.line(M, y + 74, W - M, y + 74)
     y = text(c, M, y, head, "PJS-XBold", 56, SKY, W - 2 * M)
     y = text(c, M, y - 4, line, "PJS-Medium", 44, PAPER, W - 2 * M, 1.3) - 80
-text(c, M, y, 'AI nerjemahin pertanyaan ke istilah BPS dulu, misalnya "sembako" jadi "harga eceran bahan pokok".', "PJS-Regular", 32, SKY, W - 2 * M, 1.3)
+text(c, M, y, 'AI nerjemahin pertanyaan ke istilah BPS dulu, misalnya "turis asing" jadi "wisatawan mancanegara".', "PJS-Regular", 32, SKY, W - 2 * M, 1.3)
 
 # 6 angka
 slide(6, BLUE, PAPER)
