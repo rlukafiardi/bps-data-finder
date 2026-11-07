@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from src.retrieval.bm25 import BM25
 from src.retrieval.dense import Dense, Hybrid
 from src.retrieval.period import latest_year
-from src.retrieval.region_rank import RegionRank
+from src.retrieval.region_rank import RegionRank, close_matches
 from src.retrieval.regions import domains, find_regions
 from src.retrieval.rewrite import Rewriter
 from src.values.bps import Busy, BpsError
@@ -107,7 +107,7 @@ def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
         raise HTTPException(429, "Terlalu banyak pencarian. Coba lagi sebentar.")
     rewrite = rewriter.rewrite_or_none(q)
     text = " ".join(p for p in (q, rewrite["query"], rewrite["region"]) if p) if rewrite else q
-    hits = search.search(text, k=5)
+    hits = close_matches(search.search(text, k=5))
     hits = hits.astype(object).where(hits.notna(), None)
     # question text only, no IP: real queries become the next golden set
     print(json.dumps({"event": "search", "q": q, "rewrite": rewrite is not None, "results": hits["doc_id"].tolist()}), flush=True)
