@@ -92,11 +92,7 @@ in the top 5, better than the site search?
   Manager). Cold start about 42 s from the container start (saved indexes since 2026-11-05). Deploy steps in the README; after every deploy `scripts/check_live.py` and `node tests/e2e/live.mjs`.
 - Public showcase: `uv run python scripts/export_showcase.py` builds `../bps-data-finder-showcase` (allow-list, leak scan, noreply commit, never pushes);
   this repo stays private. Rerun it after changes the public copy should have, and never push the showcase without the owner's go.
-- Next (from 2026-11-05 checks): (a) Gemini: a 503 is now retried once and the cooldown is 30 s (code done, tests pass, **not deployed**:
-  needs the owner's go; then re-measure); (b) owner: open a Dalam Angka link in a browser (statistics-table/3 failed server-side on 11-04
-  and 11-05; if it works, try the kab/kota link to enable 23,598 links); (c) billing read 2026-11-05: Rp569 so far, all other lines Rp0 (see log); recheck around the 1st of the month; (e) BPS-application
-  decision; (f) owner posts the LinkedIn post and carousel, then the final text goes in the decisions log. Keep-warm works (156 pings, no cold start);
-  usage about 1.4% of free vCPU-s.
+- Next (updated 2026-11-07): (a) when real questions exist in the Cloud Run logs (unique questions only, none of the owner's tests): the share with a Gemini rewrite (retry once on a 503, 30 s cooldown, deployed 11-05), how often `no_match` fires (floor 0.3) and whether the results cutoff (0.7 of the best score; 0.8 is the option) fits them, and turn real questions into golden-set rows; (b) owner: Dalam Angka links still fail on BPS (rechecked 11-07), retry later; if they load, try the kab/kota link (23,598 links); (c) billing: Rp569 on 11-05, recheck in the console around the 1st; (d) BPS-application decision; (e) owner posts the LinkedIn post and carousel, then the final text goes in the decisions log. Start about 42 s (saved indexes); keep-warm works.
 - Ideas: (1) finder-first [done] (2) unified catalog index [done] (3) Dalam Angka index via SIMDASI
   [done for lists; PDF route dropped] (4) hybrid BM25 + embeddings [done] (5) LLM query rewrite + region
   gazetteer [done: Gemini free tier, prompt v2] (6) fallback kab/kota -> province -> national [done:
