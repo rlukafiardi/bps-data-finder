@@ -11,7 +11,7 @@ ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT.parents[1] / ".claude" / "skills" / "social-posting" / "scripts"))
 from PIL import Image  # noqa: E402
 from reportlab.pdfbase import pdfmetrics  # noqa: E402
-from social_brand import BLUE, INK2, NAVY, PAPER, SKY, H, M, W, Carousel, text  # noqa: E402
+from social_brand import BLUE, INK2, NAVY, PAPER, SKY, Carousel, H, M, W, text  # noqa: E402
 
 SHOTS = HERE / "shots"
 # (source, crop box in the 1170 px wide screenshot, output): the parts of each phone screen that carry the point; the feature pages

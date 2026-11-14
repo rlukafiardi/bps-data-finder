@@ -32,7 +32,7 @@ def bm25_text(row):
 def fingerprint(catalog):
     """Changes when a row, its text or the row order changes: a saved index is only valid for the catalog it was built from."""
     texts = (bm25_text(r) for r in catalog.to_dict("records"))
-    return hashlib.sha256("\n".join(f"{d}\t{t}" for d, t in zip(catalog["doc_id"], texts)).encode()).hexdigest()
+    return hashlib.sha256("\n".join(f"{d}\t{t}" for d, t in zip(catalog["doc_id"], texts, strict=True)).encode()).hexdigest()
 
 
 class BM25:

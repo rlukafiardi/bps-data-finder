@@ -156,7 +156,7 @@ def main():
     df["text_parts"] = df["text_parts"].map(lambda parts: " | ".join(p for p in map(clean, parts) if p))
     df = df.rename(columns={"text_parts": "body"})
     notes = var_notes()
-    df["notes"] = [notes.get((d, i), "") if t == "var" else "" for t, d, i in zip(df["type"], df["domain"], df["source_id"])]
+    df["notes"] = [notes.get((d, i), "") if t == "var" else "" for t, d, i in zip(df["type"], df["domain"], df["source_id"], strict=True)]
     df["doc_id"] = df["type"] + ":" + df["domain"] + ":" + df["source_id"]
 
     bad = (df["source_id"] == "") | (df["title"] == "")

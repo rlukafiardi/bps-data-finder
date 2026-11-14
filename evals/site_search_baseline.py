@@ -44,7 +44,7 @@ class SiteSearch:
         cat = pd.read_parquet(CATALOG, columns=["type", "domain", "source_id", "table_code"])
         simdasi = cat[cat["type"] == "simdasi"]
         # golden SIMDASI targets may use the table code, which search rows do not carry
-        self.table_codes = dict(zip(zip(simdasi["domain"], simdasi["source_id"]), simdasi["table_code"]))
+        self.table_codes = dict(zip(zip(simdasi["domain"], simdasi["source_id"], strict=True), simdasi["table_code"], strict=True))
 
     def query(self, domain, model, words, k):
         keyword = "+".join(words)

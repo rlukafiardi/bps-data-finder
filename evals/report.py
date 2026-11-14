@@ -74,7 +74,8 @@ def dot_chart(rows):
     left, right, top, step, width = 190, 60, 24, 30, 720
     plot = width - left - right
     height = top + step * len(rows) + 30
-    x = lambda v: left + v * plot
+    def x(v):
+        return left + v * plot
     parts = [f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="Recall@5 per method with 95% intervals">']
     for tick in (0, 0.25, 0.5, 0.75, 1):
         parts.append(f'<line class="grid" x1="{x(tick)}" x2="{x(tick)}" y1="{top - 8}" y2="{height - 26}"/>')
@@ -124,7 +125,7 @@ def build():
 
     shown = history[history["method"].isin([PRODUCTION, "bps-search-keywords"])].rename(columns={
         "date": "Date", "source": "Run", "catalog_rows": "Catalog rows", "n": "Questions", "method": "Method", "recall5": "Recall@5", "mrr": "MRR"})
-    shown["95% interval"] = [f"{float(lo):.3f} to {float(hi):.3f}" if lo else "not kept" for lo, hi in zip(history.loc[shown.index, "recall5_lo"], history.loc[shown.index, "recall5_hi"])]
+    shown["95% interval"] = [f"{float(lo):.3f} to {float(hi):.3f}" if lo else "not kept" for lo, hi in zip(history.loc[shown.index, "recall5_lo"], history.loc[shown.index, "recall5_hi"], strict=True)]
     shown = shown[["Date", "Run", "Method", "Questions", "Catalog rows", "Recall@5", "95% interval", "MRR"]]
 
     best, lo, hi = prod["recall@5"].mean(), *interval(prod["recall@5"])

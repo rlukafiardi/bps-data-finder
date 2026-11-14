@@ -24,7 +24,7 @@ import json
 import os
 import sys
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import httpx
@@ -52,7 +52,7 @@ class Stop(Exception):
 
 def log(path, status):
     with LOG.open("a") as f:
-        f.write(f"{datetime.now(timezone.utc).isoformat()}\t{status}\t{path}\n")
+        f.write(f"{datetime.now(UTC).isoformat()}\t{status}\t{path}\n")
 
 
 def get(client, path, params, out):

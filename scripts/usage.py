@@ -10,7 +10,7 @@ import calendar
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 
@@ -40,7 +40,8 @@ def get(token: str, url: str, **params) -> dict:
 
 def series(token: str, metric: str, start: datetime, end: datetime, group_by: str | None = None) -> dict[str, float]:
     """Sum of one Cloud Run metric over [start, end), per value of `group_by` (or one total under "")."""
-    iso = lambda t: t.isoformat().replace("+00:00", "Z")
+    def iso(t):
+        return t.isoformat().replace("+00:00", "Z")
     params = {"filter": f'metric.type="run.googleapis.com/{metric}" AND resource.labels.service_name="{SERVICE}"', "interval.startTime": iso(start),
               "interval.endTime": iso(end), "aggregation.alignmentPeriod": f"{int((end - start).total_seconds())}s", "aggregation.perSeriesAligner": "ALIGN_SUM",
               "aggregation.crossSeriesReducer": "REDUCE_SUM"}
@@ -79,7 +80,8 @@ def bucket_gb(token: str) -> tuple[int, float]:
 
 def bucket_ops(token: str, start: datetime, end: datetime) -> dict[str, float]:
     """Cloud Storage requests per method over [start, end), all buckets of the project."""
-    iso = lambda t: t.isoformat().replace("+00:00", "Z")
+    def iso(t):
+        return t.isoformat().replace("+00:00", "Z")
     params = {"filter": 'metric.type="storage.googleapis.com/api/request_count"', "interval.startTime": iso(start), "interval.endTime": iso(end),
               "aggregation.alignmentPeriod": f"{int((end - start).total_seconds())}s", "aggregation.perSeriesAligner": "ALIGN_SUM",
               "aggregation.crossSeriesReducer": "REDUCE_SUM", "aggregation.groupByFields": "metric.label.method"}
@@ -92,7 +94,7 @@ def bucket_ops(token: str, start: datetime, end: datetime) -> dict[str, float]:
 
 def usage() -> list[str]:
     token = access_token()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     month, week = period(token, month_start, now), period(token, now - timedelta(days=7), now)
     days_in_month = calendar.monthrange(now.year, now.month)[1]

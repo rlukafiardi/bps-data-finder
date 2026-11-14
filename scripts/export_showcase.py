@@ -91,7 +91,8 @@ if __name__ == "__main__":
     missing = [rel for src, rel in files() if not src.exists()]
     if missing:
         sys.exit(f"missing: {missing}")
-    git_config = lambda *args: subprocess.run(["git", "config", *args], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    def git_config(*args):
+        return subprocess.run(["git", "config", *args], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     identity = {"name": git_config("user.name"), "email": git_config("--local", "user.email")}  # the email must be set in this repo, never taken from the global one
     if not NOREPLY.match(identity["email"]):
         sys.exit(f"the repo's local git email must be the GitHub noreply address, got {identity['email']!r}")
