@@ -45,7 +45,6 @@ MARKER = RAW / "refresh_started"
 cutoff = None  # epoch seconds: a cached page older than this is fetched again
 
 
-
 class Stop(Exception):
     pass
 
@@ -103,7 +102,9 @@ def pull_pages(client, path, params, folder, deadline):
 
 
 def search_short(domain):
-    pages = [json.loads(p.read_text())["data"] for p in sorted((RAW / "search" / domain / "tablestatistic").glob("p*.json"))]
+    pages = [
+        json.loads(p.read_text())["data"] for p in sorted((RAW / "search" / domain / "tablestatistic").glob("p*.json"))
+    ]
     if not pages or not pages[0]:
         return False
     return len({r["url"] for p in pages for r in p[1]}) < pages[0][0]["total"]

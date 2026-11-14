@@ -1,6 +1,6 @@
 """Search API for the BPS data finder: question -> top 5 BPS sources with public links.
 
-    ALLOWED_ORIGINS=http://localhost:8080 uv run uvicorn app.main:app --port 8000
+ALLOWED_ORIGINS=http://localhost:8080 uv run uvicorn app.main:app --port 8000
 """
 
 import json
@@ -112,7 +112,18 @@ def api_search(request: Request, q: str = Query(min_length=2, max_length=200)):
     nothing = bool(len(hits)) and no_match(text, hits.iloc[0])
     hits = hits.astype(object).where(hits.notna(), None)
     # question text only, no IP: real queries become the next golden set
-    print(json.dumps({"event": "search", "q": q, "rewrite": rewrite is not None, "no_match": nothing, "results": hits["doc_id"].tolist()}), flush=True)
+    print(
+        json.dumps(
+            {
+                "event": "search",
+                "q": q,
+                "rewrite": rewrite is not None,
+                "no_match": nothing,
+                "results": hits["doc_id"].tolist(),
+            }
+        ),
+        flush=True,
+    )
     return {
         "question": q,
         "rewrite": rewrite,

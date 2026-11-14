@@ -15,19 +15,65 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXPORT = ROOT.parent / "bps-data-finder-showcase"
 
-CODE = ["app/*.py", "src/**/*.py", "tests/*.py", "tests/e2e/*.mjs", "tests/e2e/fixtures/*.json", "tests/conftest.py", "tests/fixtures/catalog/*.json", "evals/*.py", "evals/golden_set.csv",
-        "evals/history.csv", "evals/README.md", "scripts/refresh.sh", "scripts/check_live.py", "Dockerfile", "pyproject.toml", "uv.lock",
-        ".env.example", "web/index.html", "web/style.css", "web/app.js", "web/config.js", "web/_headers"]
-DOCS = {"showcase/README.md": "README.md", "docs/architecture.svg": "docs/architecture.svg", "docs/eval-report.html": "docs/eval-report.html",
-        "docs/linkedin/shots/search_light.png": "docs/screenshots/search.png", "docs/linkedin/shots/panel_garut_light.png": "docs/screenshots/answer.png"}
-TEXT_SUFFIXES = {".py", ".md", ".csv", ".toml", ".mjs", ".js", ".json", ".html", ".css", ".svg", ".sh", ".example", ".lock", ""}
-LEAKS = {"credential assignment": r"(?i)(BPS_API_KEY|GEMINI_API_KEY|NETLIFY_AUTH_TOKEN)[ \t]*=[ \t]*\S{8,}",
-         "email": r"[\w.+-]+@[\w-]+(\.[\w-]+)*\.[a-z]{2,}",  # a package version like name@5.24.0 is not an address
-         "employer": r"(?i)\bioh\b|ioh\.co\.id|tfe_ioh",
-         "owner name": r"(?i)lukafiardi|radikal",
-         "cloud ids": r"823141605435|bps-data-finder-data|api-runtime|014936|4e212512|My Billing|gcloud\.sh",
-         "local path": r"/Users/|/private/tmp"}
-ALLOWED = ["https://cari-data-bps.netlify.app", "github.com/rlukafiardi/bps-data-finder-showcase"]  # the live site and this repo's address
+CODE = [
+    "app/*.py",
+    "src/**/*.py",
+    "tests/*.py",
+    "tests/e2e/*.mjs",
+    "tests/e2e/fixtures/*.json",
+    "tests/conftest.py",
+    "tests/fixtures/catalog/*.json",
+    "evals/*.py",
+    "evals/golden_set.csv",
+    "evals/history.csv",
+    "evals/README.md",
+    "scripts/refresh.sh",
+    "scripts/check_live.py",
+    "Dockerfile",
+    "pyproject.toml",
+    "uv.lock",
+    ".env.example",
+    "web/index.html",
+    "web/style.css",
+    "web/app.js",
+    "web/config.js",
+    "web/_headers",
+]
+DOCS = {
+    "showcase/README.md": "README.md",
+    "docs/architecture.svg": "docs/architecture.svg",
+    "docs/eval-report.html": "docs/eval-report.html",
+    "docs/linkedin/shots/search_light.png": "docs/screenshots/search.png",
+    "docs/linkedin/shots/panel_garut_light.png": "docs/screenshots/answer.png",
+}
+TEXT_SUFFIXES = {
+    ".py",
+    ".md",
+    ".csv",
+    ".toml",
+    ".mjs",
+    ".js",
+    ".json",
+    ".html",
+    ".css",
+    ".svg",
+    ".sh",
+    ".example",
+    ".lock",
+    "",
+}
+LEAKS = {
+    "credential assignment": r"(?i)(BPS_API_KEY|GEMINI_API_KEY|NETLIFY_AUTH_TOKEN)[ \t]*=[ \t]*\S{8,}",
+    "email": r"[\w.+-]+@[\w-]+(\.[\w-]+)*\.[a-z]{2,}",  # a package version like name@5.24.0 is not an address
+    "employer": r"(?i)\bioh\b|ioh\.co\.id|tfe_ioh",
+    "owner name": r"(?i)lukafiardi|radikal",
+    "cloud ids": r"823141605435|bps-data-finder-data|api-runtime|014936|4e212512|My Billing|gcloud\.sh",
+    "local path": r"/Users/|/private/tmp",
+}
+ALLOWED = [
+    "https://cari-data-bps.netlify.app",
+    "github.com/rlukafiardi/bps-data-finder-showcase",
+]  # the live site and this repo's address
 NOREPLY = re.compile(r"^\d+\+[\w-]+@users\.noreply\.github\.com$")
 MIT_LICENSE = """MIT License
 
@@ -48,7 +94,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 def files():
-    out = [(p, str(p.relative_to(ROOT))) for pattern in CODE for p in ROOT.glob(pattern) if p.is_file() and "__pycache__" not in p.parts]
+    out = [
+        (p, str(p.relative_to(ROOT)))
+        for pattern in CODE
+        for p in ROOT.glob(pattern)
+        if p.is_file() and "__pycache__" not in p.parts
+    ]
     return out + [(ROOT / source, target) for source, target in DOCS.items()]
 
 
@@ -60,7 +111,15 @@ def write(source, relative):
 
 def secret_values():
     env = ROOT / ".env"
-    pairs = [line.strip().split("=", 1) for line in env.read_text().splitlines() if "=" in line and not line.startswith("#")] if env.exists() else []
+    pairs = (
+        [
+            line.strip().split("=", 1)
+            for line in env.read_text().splitlines()
+            if "=" in line and not line.startswith("#")
+        ]
+        if env.exists()
+        else []
+    )
     return [v.strip("\"'") for _, v in pairs if len(v.strip("\"'")) >= 8]
 
 
@@ -91,9 +150,14 @@ if __name__ == "__main__":
     missing = [rel for src, rel in files() if not src.exists()]
     if missing:
         sys.exit(f"missing: {missing}")
+
     def git_config(*args):
         return subprocess.run(["git", "config", *args], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    identity = {"name": git_config("user.name"), "email": git_config("--local", "user.email")}  # the email must be set in this repo, never taken from the global one
+
+    identity = {
+        "name": git_config("user.name"),
+        "email": git_config("--local", "user.email"),
+    }  # the email must be set in this repo, never taken from the global one
     if not NOREPLY.match(identity["email"]):
         sys.exit(f"the repo's local git email must be the GitHub noreply address, got {identity['email']!r}")
     EXPORT.mkdir(parents=True, exist_ok=True)
@@ -103,7 +167,10 @@ if __name__ == "__main__":
     package = json.loads((ROOT / "package.json").read_text())
     package["devDependencies"].pop("netlify-cli", None)  # the Netlify deploy is not part of the showcase
     (EXPORT / "package.json").write_text(json.dumps(package, indent=2) + "\n")
-    (EXPORT / ".gitignore").write_text(".env\n.venv/\n__pycache__/\n.DS_Store\ndata/\nnode_modules/\ntests/e2e/shots/\n.pytest_cache/\n", encoding="utf-8")
+    (EXPORT / ".gitignore").write_text(
+        ".env\n.venv/\n__pycache__/\n.DS_Store\ndata/\nnode_modules/\ntests/e2e/shots/\n.pytest_cache/\n",
+        encoding="utf-8",
+    )
     hits = leak_scan()
     if hits:
         clear_export()
@@ -114,7 +181,12 @@ if __name__ == "__main__":
     for k, v in identity.items():
         subprocess.run(["git", "config", "--local", f"user.{k}", v], cwd=EXPORT, check=True)
     subprocess.run(["git", "add", "-A"], cwd=EXPORT, check=True)
-    sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+    sha = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.strip()
     committed = subprocess.run(["git", "commit", "-q", "-m", f"Update from the private repo at {sha}"], cwd=EXPORT)
     count = sum(1 for p in EXPORT.rglob("*") if p.is_file() and ".git" not in p.parts)
-    print(f"exported {count} files to {EXPORT}; leak scan clean" + ("" if committed.returncode == 0 else "; nothing new to commit"))
+    print(
+        f"exported {count} files to {EXPORT}; leak scan clean"
+        + ("" if committed.returncode == 0 else "; nothing new to commit")
+    )

@@ -24,7 +24,9 @@ class Dense:
         self.catalog = catalog.reset_index(drop=True)
         self.model = SentenceTransformer(EMBED_MODEL)
         if saved:
-            assert (Path(saved) / "fingerprint.txt").read_text() == fingerprint(self.catalog), f"{saved} was built from another catalog: rebuild it"
+            assert (Path(saved) / "fingerprint.txt").read_text() == fingerprint(self.catalog), (
+                f"{saved} was built from another catalog: rebuild it"
+            )
             self.vectors = np.load(Path(saved) / "vectors.npy", mmap_mode="r")
         else:
             texts = [doc_text(r) for r in self.catalog.to_dict("records")]
