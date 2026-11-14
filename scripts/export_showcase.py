@@ -38,6 +38,9 @@ CODE = [
     "web/app.js",
     "web/config.js",
     "web/_headers",
+    ".pre-commit-config.yaml",
+    ".githooks/pre-commit",
+    ".github/dependabot.yml",
 ]
 DOCS = {
     "showcase/README.md": "README.md",
@@ -48,6 +51,8 @@ DOCS = {
 }
 TEXT_SUFFIXES = {
     ".py",
+    ".yaml",
+    ".yml",
     ".md",
     ".csv",
     ".toml",
@@ -131,7 +136,7 @@ def leak_scan():
         rel = path.relative_to(EXPORT)
         if re.search(r"(?i)(^|/)\.env$|token|secret|credential|\.pem$|\.key$", str(rel)):
             hits.append(f"credential-like file name: {rel}")
-        if path.suffix in TEXT_SUFFIXES or path.name == "Dockerfile":
+        if path.suffix in TEXT_SUFFIXES or path.name == "Dockerfile" or path.parent.name == ".githooks":
             text = path.read_text(encoding="utf-8", errors="ignore")
             hits += [f"your .env value in {rel}" for v in secrets if v in text]
             for allowed in ALLOWED:
