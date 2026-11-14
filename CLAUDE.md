@@ -75,6 +75,7 @@ in the top 5, better than the site search?
   for most full-sentence queries (199/210 empty), so the baseline is the keyword+retry variant.
 
 ## Status
+- Tooling (2026-11-14): pre-commit via `.githooks/` (after a fresh clone: `git config core.hooksPath .githooks`): gitleaks, large-file and merge-conflict checks, ruff lint and format (blocking; the format commit is in `.git-blame-ignore-revs`); Dependabot monthly (uv, npm, pre-commit). No GitHub Actions CI while the account has a billing lock. Tests: `uv run pytest -q`.
 - Works: catalog builder, region lookup (`src/retrieval/regions.py`), BM25, dense (multilingual-e5-small),
   RRF hybrid, region-aware ranking, eval (`uv run python -m evals.run_eval`).
 - Results on the complete catalog (74,945 rows), 88 Claude-written questions, pooled judging, R@5 / MRR:
