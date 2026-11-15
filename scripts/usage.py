@@ -24,7 +24,7 @@ FREE_REGISTRY_GB, FREE_BUCKET_GB = 0.5, 5.0
 FREE_CLASS_A, FREE_CLASS_B = (
     5_000,
     50_000,
-)  # Cloud Storage operations a month in a free-tier US region; the bucket is in us-central1
+)  # Cloud Storage operations a month in a free-tier US region; this project's bucket is in Jakarta (not free); the Jabodetabek bucket is in us-central1
 CLASS_A = {"WriteObject", "ListObjects"}  # the methods this pipeline uses; the 2026-11 bill matched these two
 CLASS_B = {"GetObjectMetadata", "ReadObject"}
 WARN_SHARE = 0.5
