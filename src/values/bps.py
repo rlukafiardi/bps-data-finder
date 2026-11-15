@@ -54,8 +54,12 @@ def get(path, params=None):
         raise BpsError(type(e).__name__) from None  # the error text holds the URL, which holds the key
     if resp.status_code != 200:
         raise BpsError(f"HTTP {resp.status_code}")
+    body = resp.json()
+    # SIMDASI outage: status 200 with an HTML error page inside a list
+    if isinstance(body, list) and body and isinstance(body[0], str):
+        raise BpsError("HTML error page")
     fetched_at = time.time()
-    cache[cache_key] = (fetched_at, resp.json())
+    cache[cache_key] = (fetched_at, body)
     while len(cache) > CACHE_SIZE:
         del cache[next(iter(cache))]
     return cache[cache_key][1], fetched_at

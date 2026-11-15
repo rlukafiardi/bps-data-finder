@@ -177,6 +177,8 @@ def api_value(
         raise HTTPException(429, "Sedang ramai. Coba lagi sebentar.") from None
     except BpsError as e:
         print(json.dumps({"event": "bps_error", "doc_id": doc_id, "error": str(e)}), flush=True)
+        if row["type"] == "simdasi":
+            raise HTTPException(502, "Tabel Dalam Angka BPS sedang bermasalah. Coba lagi nanti.") from e
         raise HTTPException(502, "BPS belum menjawab. Coba lagi nanti.") from e
     table["fetched_at"] = pd.Timestamp(table["fetched_at"], unit="s", tz="UTC").isoformat(timespec="seconds")
     print(json.dumps({"event": "value", "doc_id": doc_id, "period": table["period"]}), flush=True)

@@ -185,3 +185,15 @@ def test_column_label_falls_back_to_the_year():
     assert (
         tables.column_label({"val": "0", "label": "Tidak ada"}, {"val": 189, "label": "Februari"}, "2026") == "Februari"
     )
+
+
+def test_bps_html_error_page_is_an_error_and_not_cached(monkeypatch):
+    monkeypatch.setenv("BPS_API_KEY", "k")
+    monkeypatch.setattr(bps, "cache", {})
+    monkeypatch.setattr(bps, "next_slot", 0.0)
+    monkeypatch.setattr(bps, "SLOT_S", 0.0)
+    page = httpx.Response(200, json=["<!DOCTYPE html><title>SIMDASI - Error</title>"])
+    monkeypatch.setattr(bps.httpx, "get", lambda url, **kw: page)
+    with pytest.raises(bps.BpsError):
+        bps.get("/simdasi/key/{key}")
+    assert bps.cache == {}  # the next call asks BPS again once it is back
