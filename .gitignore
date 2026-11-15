@@ -14,3 +14,6 @@ web/.netlify.env
 web/.netlify-home/
 web/.netlify/
 web/dist/
+
+# personal Google account for gcloud.sh (never commit)
+.personal_account

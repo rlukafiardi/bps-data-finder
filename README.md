@@ -38,7 +38,8 @@ uv run pytest -q tests
 npm install && npm run test:e2e                # page in real Chrome against a fake API
 npm run serve -- 8080 http://localhost:8000    # the page on http://localhost:8080
 
-# deploy (personal Google account through ./gcloud.sh; Netlify token in web/.netlify.env)
+# deploy (personal Google account through ./gcloud.sh, which reads the account's email from the ignored file .personal_account;
+# Netlify token in web/.netlify.env)
 scripts/publish_data.sh                        # catalog and saved indexes -> private bucket (applies on the next API start)
 SITE_ORIGIN=https://cari-data-bps.netlify.app scripts/deploy_api.sh
 API_ORIGIN=https://api-823141605435.asia-southeast2.run.app scripts/deploy_site.sh
